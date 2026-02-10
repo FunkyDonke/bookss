@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // GitHub Pages SPA redirect script
+        // This handles 404 errors by redirecting to the main page with the path as a hash
+        (function() {
+            var redirect = sessionStorage.redirect;
+            delete sessionStorage.redirect;
+            if (redirect && redirect !== location.href) {
+                history.replaceState(null, null, redirect);
+            }
+        })();
+        
+        // Immediately redirect to index with hash
+        var pathSegments = location.pathname.split('/').filter(function(segment) {
+            return segment && segment !== 'books';
+        });
+        
+        if (pathSegments.length > 0) {
+            // Convert path to hash format
+            var hash = '#/';
+            if (pathSegments[0].match(/^\d+$/)) {
+                // If first segment is a number, it's a class ID
+                hash += 'Class' + pathSegments[0];
+                if (pathSegments[1]) {
+                    hash += '/' + pathSegments[1];
+                    if (pathSegments[2]) {
+                        hash += '/' + pathSegments[2];
+                    }
+                }
+            }
+            
+            // Redirect to index.html with hash
+            var newUrl = location.origin + '/' + hash;
+            window.location.replace(newUrl);
+        } else {
+            // Just go to homepage
+            window.location.replace(location.origin + '/');
+        }
+    </script>
+</head>
+<body>
+    <p style="text-align: center; font-family: sans-serif; margin-top: 50px;">Redirecting...</p>
+</body>
+</html>
