@@ -751,57 +751,45 @@
         let selectedIds = new Set();
         let saveDataTimeout = null;
         
-        // Smart ID Generation - creates short, readable IDs
+        // Smart ID Generation - creates SHORT, CONSISTENT IDs
         let idCounters = { subject: 0, chapter: 0 };
         
-        function generateShortId(type, title = '') {
-            // Try to create a slug from the title
-            if (title) {
-                // Convert to lowercase and remove special characters
-                let slug = title
-                    .toLowerCase()
-                    .trim()
-                    // Remove Bengali and special characters, keep only English letters
-                    .replace(/[^\w\s-]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
-                    .substring(0, 20); // Max 20 chars
-                
-                // If we got a valid slug, check if it's unique
-                if (slug) {
-                    const baseSlug = slug;
-                    let counter = 1;
-                    
-                    // Check uniqueness based on type
-                    if (type === 'subject' && currentClass) {
-                        const subjects = subjectsData[currentClass.id] || [];
-                        while (subjects.some(s => s.id === slug)) {
-                            slug = baseSlug + counter;
-                            counter++;
-                        }
-                        return slug;
-                    } else if (type === 'chapter' && currentSubject) {
-                        // For chapters, check within current subject
-                        while (findNode(currentSubject.chapters, slug)) {
-                            slug = baseSlug + counter;
-                            counter++;
-                        }
-                        return slug;
-                    }
+        // Simple hash function to create consistent short IDs from text
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            // Convert to base36 and take first 6 characters
+            return Math.abs(hash).toString(36).substring(0, 6);
+        }
+        
+        function generateShortId(type, title = '', classId = null) {
+            if (!title) {
+                // Fallback to counter if no title
+                if (type === 'subject') {
+                    idCounters.subject++;
+                    return 's' + idCounters.subject;
+                } else {
+                    idCounters.chapter++;
+                    return 'c' + idCounters.chapter;
                 }
             }
             
-            // Fallback: use simple counter-based IDs
-            if (type === 'subject') {
-                idCounters.subject++;
-                return 'sub' + idCounters.subject;
+            // Create a deterministic ID from the title
+            // This ensures the same title always gets the same ID
+            const baseId = simpleHash(title);
+            
+            // Add class prefix for subjects to avoid conflicts across classes
+            if (type === 'subject' && classId) {
+                return 's' + classId + '_' + baseId;
             } else if (type === 'chapter') {
-                idCounters.chapter++;
-                return 'ch' + idCounters.chapter;
+                return 'c' + baseId;
             }
             
-            // Ultimate fallback
-            return type + Math.random().toString(36).substr(2, 6);
+            return baseId;
         }
         
         // Initialize counters from existing data
@@ -813,8 +801,8 @@
             [6, 7, 8, 9, 11].forEach(classId => {
                 const subjects = subjectsData[classId] || [];
                 subjects.forEach(subject => {
-                    // Extract number from IDs like "sub5", "sub10"
-                    const match = subject.id.match(/^sub(\d+)$/);
+                    // Extract number from IDs like "s5", "s10"
+                    const match = subject.id.match(/^s(\d+)$/);
                     if (match) {
                         maxSubjectNum = Math.max(maxSubjectNum, parseInt(match[1]));
                     }
@@ -823,7 +811,7 @@
                     function checkChapters(nodes) {
                         if (!nodes) return;
                         nodes.forEach(node => {
-                            const chMatch = node.id.match(/^ch(\d+)$/);
+                            const chMatch = node.id.match(/^c(\d+)$/);
                             if (chMatch) {
                                 maxChapterNum = Math.max(maxChapterNum, parseInt(chMatch[1]));
                             }
@@ -999,7 +987,7 @@
                         
                         if (name) {
                             const sub = {
-                                id: generateShortId("subject", name),
+                                id: generateShortId("subject", name, classId),
                                 name: name,
                                 desc: isDouble ? 'অপ্রয়োজনীয় (ঐচ্ছিক)' : 'আবশ্যিক',
                                 icon: 'book',
@@ -1025,7 +1013,7 @@
                                 const grp = groupMap[char];
                                 if (grp && name) {
                                     const sub = {
-                                        id: generateShortId("subject", name),
+                                        id: generateShortId("subject", name, classId),
                                         name: name,
                                         desc: isGroupOpt ? 'বিভাগীয় ঐচ্ছিক' : 'বিভাগীয়',
                                         icon: 'book',
@@ -1887,7 +1875,7 @@
             if(!name) return;
             const newData = { name, desc: document.getElementById('input-sub-desc').value, group: document.getElementById('input-sub-group').value, isOptional: document.getElementById('input-sub-optional').checked, icon: 'book' };
             if(id) { const idx=subjectsData[currentClass.id].findIndex(s=>s.id===id); if(idx>-1) subjectsData[currentClass.id][idx]={...subjectsData[currentClass.id][idx],...newData}; }
-            else subjectsData[currentClass.id].push({id: generateShortId("subject", newData.name), ...newData, chapters: []});
+            else subjectsData[currentClass.id].push({id: generateShortId("subject", newData.name, currentClass.id), ...newData, chapters: []});
             saveData(); renderSubjects(); closeModal('modal-subject');
         }
         function editSubject(id) {
