@@ -44,7 +44,7 @@
         }
         .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        .fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Custom Scrollbar */
@@ -268,7 +268,7 @@
                 </div>
 
                 <!-- VIEW 3: Reader View -->
-                                <div id="view-reader" class="hidden fade-in h-full flex flex-col relative pt-4 px-6 lg:px-8">
+                                <div id="view-reader" class="hidden h-full flex flex-col relative pt-4 pl-6 lg:pl-8 pr-6 lg:pr-8">
                      <!-- Bulk Action Bar -->
                     <div id="bulk-action-bar-chapters" class="hidden absolute bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-700 rounded-full px-6 py-3 flex items-center gap-4 animate-bounce-in">
                         <span class="text-sm font-bold text-gray-700 dark:text-white"><span id="selected-count-chaps">0</span> টি নির্বাচিত</span>
@@ -280,9 +280,11 @@
                     <!-- Mobile Sidebar Overlay -->
                     <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/60 z-40 lg:hidden" onclick="toggleSidebar()"></div>
 
-                    <div class="flex gap-0 lg:gap-6 h-full pb-2 overflow-hidden">
-                        <!-- Sidebar (Table of Contents) - Collapsible & Responsive -->
-                        <div id="reader-sidebar" class="fixed lg:relative top-0 left-0 h-full w-80 lg:w-80 flex-shrink-0 flex-col z-50 lg:z-auto bg-white dark:bg-gray-900 shadow-2xl lg:shadow-sm border-r lg:border lg:rounded-2xl border-gray-100 dark:border-gray-800 overflow-hidden transition-all duration-300 -translate-x-full lg:translate-x-0 lg:flex">
+                    <div id="reader-panels" class="flex gap-0 lg:gap-6 h-full pb-2 overflow-hidden">
+                        <!-- Sidebar: pl-0 so its LEFT edge touches the page padding edge -->
+                        <div id="reader-sidebar" class="fixed lg:relative top-0 left-0 h-full w-80 lg:w-80 flex-shrink-0 flex-col z-50 lg:z-auto bg-white dark:bg-gray-900 shadow-2xl lg:shadow-none lg:rounded-2xl overflow-hidden transition-all duration-300 -translate-x-full lg:translate-x-0 lg:flex">
+                            <!-- Inner border — clipped by overflow-hidden when w-0, never flashes -->
+                            <div class="h-full flex flex-col border-r lg:border border-gray-100 dark:border-gray-800 lg:rounded-2xl overflow-hidden">
                             <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
                                 <button onclick="showSubjects()" class="text-gray-500 hover:text-indigo-600 transition"><i data-lucide="arrow-left" class="h-5 w-5"></i></button>
                                 <span class="font-bold text-gray-700 dark:text-gray-200 truncate mx-2">সূচিপত্র</span>
@@ -295,16 +297,21 @@
                                     <button onclick="openAddChapterModal()" title="Add" class="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"><i data-lucide="plus" class="h-4 w-4"></i></button>
                                 </div>
                             </div>
-                            <div id="chapter-list" class="flex-grow overflow-y-auto p-2 custom-scrollbar"></div>
+                            <div id="chapter-list" class="flex-grow overflow-y-auto p-2 custom-scrollbar" style="scroll-behavior: auto;"></div>
                             <div id="empty-chapters-msg" class="hidden p-8 text-center text-sm text-gray-400">কোন অধ্যায় নেই।</div>
+                            </div><!-- end inner border wrapper -->
                         </div>
 
                         <!-- Content Area (Reader Features) - Full Width Responsive -->
-                        <div class="flex-grow h-full w-full bg-white dark:bg-gray-900 lg:rounded-2xl shadow-sm lg:border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col relative">
+                        <div id="reader-content-area" class="flex-grow h-full w-full bg-white dark:bg-gray-900 lg:rounded-2xl shadow-sm lg:border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col relative">
                             <!-- Content Header with Tabs -->
-                            <div class="flex-none border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                            <div id="reader-subject-header" class="flex-none border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                                 <div class="p-4 md:p-6 pb-2">
                                     <div class="flex items-start gap-3">
+                                        <!-- Back button (always visible) -->
+                                        <button onclick="showSubjects()" class="flex-shrink-0 p-2 mt-1 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors" title="বিষয় তালিকায় ফিরুন">
+                                            <i data-lucide="arrow-left" class="h-5 w-5"></i>
+                                        </button>
                                         <!-- Toggle Sidebar Button -->
                                         <button onclick="toggleSidebar()" class="flex-shrink-0 p-2 mt-1 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors" title="সূচিপত্র দেখান/লুকান">
                                             <i data-lucide="panel-left" class="h-5 w-5"></i>
@@ -335,7 +342,7 @@
                             </div>
 
                             <!-- Content Body -->
-                            <div id="content-body" class="flex-grow overflow-y-auto p-0 relative bg-white dark:bg-gray-900 custom-scrollbar">
+                            <div id="content-body" class="flex-grow overflow-y-auto p-0 relative bg-white dark:bg-gray-900 custom-scrollbar" style="scroll-behavior: auto;">
                                 
                                 <!-- Empty State -->
                                 <div id="content-empty" class="flex flex-col items-center justify-center h-full text-gray-400 p-8 text-center">
@@ -1212,19 +1219,99 @@
             currentSubject = sub;
             if(currentSubject.chapters) currentSubject.chapters.forEach(ensureContentStructure);
             
-            // Expand all chapters by default on first open
+            // Expand all chapters by default
             if (currentSubject.chapters) {
                 expandAllChapters(currentSubject.chapters);
             }
             
+            // Pre-set the last read chapter BEFORE rendering, so tree renders already highlighted
+            const lastChapterId = lastReadPosition[currentClass.id]?.[currentSubject.id];
+            if (lastChapterId && !currentChapterNode) {
+                const lastChapter = findNode(currentSubject.chapters, lastChapterId);
+                if (lastChapter) {
+                    currentChapterNode = lastChapter;
+                    // Pre-expand the path to this chapter
+                    const path = findPathToNode(currentSubject.chapters, lastChapterId);
+                    if (path) path.forEach(parentId => openAccordionIds.add(parentId));
+                }
+            }
+            
             hideAllViews();
-            document.getElementById('view-reader').classList.remove('hidden');
+            const readerEl = document.getElementById('view-reader');
+            // Make it invisible but present in DOM so we can scroll before showing
+            readerEl.classList.remove('hidden');
+            readerEl.style.opacity = '0';
             document.getElementById('reader-subject-title').innerText = `${currentClass.name} > ${sub.name}`;
-            document.getElementById('content-empty').classList.remove('hidden');
-            document.getElementById('content-tabs').classList.add('hidden');
-            ['text', 'pdf', 'video', 'qna'].forEach(t => document.getElementById(`tab-content-${t}`).classList.add('hidden'));
             selectedIds.clear();
+            
+            // Restore sidebar hidden state BEFORE any paint to prevent flash
+            const sidebar = document.getElementById('reader-sidebar');
+            const panels = document.getElementById('reader-panels');
+            sidebar.style.transition = 'none'; // suppress during restore
+            if (window.innerWidth >= 1024) {
+                if (sessionStorage.getItem('sidebarHidden')) {
+                    sidebar.classList.add('lg:w-0', 'lg:opacity-0', 'lg:pointer-events-none');
+                    if (panels) panels.classList.remove('lg:gap-6');
+                } else {
+                    sidebar.classList.remove('lg:w-0', 'lg:opacity-0', 'lg:pointer-events-none');
+                    if (panels) panels.classList.add('lg:gap-6');
+                }
+            }
+            void sidebar.offsetWidth; // force reflow
+            sidebar.style.transition = ''; // re-enable
+            
+            // Render chapters with highlight already in place
             renderChapters();
+            
+            // If we have a last chapter, show its content immediately
+            if (currentChapterNode) {
+                document.getElementById('content-empty').classList.add('hidden');
+                document.getElementById('content-tabs').classList.remove('hidden');
+                document.getElementById('chapter-title').innerText = currentChapterNode.title;
+                ensureContentStructure(currentChapterNode);
+                switchTab(activeTab);
+                
+                // Scroll to correct position WHILE still invisible — no bounce possible
+                const chapterElement = document.querySelector(`[onclick*="clickChapter('${currentChapterNode.id}'"]`);
+                if (chapterElement) {
+                    chapterElement.scrollIntoView({ behavior: 'instant', block: 'center' });
+                }
+            } else {
+                document.getElementById('content-empty').classList.remove('hidden');
+                document.getElementById('content-tabs').classList.add('hidden');
+                ['text', 'pdf', 'video', 'qna'].forEach(t => document.getElementById(`tab-content-${t}`).classList.add('hidden'));
+            }
+            
+            // Now reveal: both main panels slide up with standard fade-in.
+            // translateY is relative to each panel's own layout position,
+            // NOT their internal scroll — so no bounce!
+            readerEl.style.opacity = '';
+            
+            const contentArea = readerEl.querySelector('.flex-grow.h-full.w-full');
+            
+            // Temporarily disable sidebar's transition so width restoration doesn't animate visibly
+            sidebar.style.transition = 'none';
+            void sidebar.offsetWidth; // force reflow
+            
+            // Remove class first in case it's still on from a previous visit
+            sidebar.classList.remove('fade-in');
+            if (contentArea) contentArea.classList.remove('fade-in');
+            
+            // Re-enable transition after suppressing the initial state flash
+            requestAnimationFrame(() => {
+                sidebar.style.transition = '';
+                void sidebar.offsetWidth;
+                
+                // Now add fade-in — animation plays cleanly from frame 0
+                sidebar.classList.add('fade-in');
+                if (contentArea) contentArea.classList.add('fade-in');
+                
+                setTimeout(() => {
+                    sidebar.classList.remove('fade-in');
+                    if (contentArea) contentArea.classList.remove('fade-in');
+                }, 500);
+            });
+            
             updateURL(); // Update URL
         }
         
@@ -1243,28 +1330,8 @@
             if(!currentSubject.chapters || currentSubject.chapters.length===0) document.getElementById('empty-chapters-msg').classList.remove('hidden');
             else {
                 document.getElementById('empty-chapters-msg').classList.add('hidden');
-                
-                // Check if we should auto-open last read chapter
-                const lastChapterId = lastReadPosition[currentClass.id]?.[currentSubject.id];
-                const shouldAutoOpen = lastChapterId && !currentChapterNode;
-                
-                // Render all chapters (already expanded from openReader)
+                // Render all chapters
                 currentSubject.chapters.forEach(node => list.appendChild(createChapterNode(node, 0)));
-                
-                // Auto-open last read chapter
-                if (shouldAutoOpen) {
-                    setTimeout(() => {
-                        clickChapter(lastChapterId, null, true);
-                        
-                        // Scroll to chapter in sidebar (no jump, smooth)
-                        setTimeout(() => {
-                            const chapterElement = document.querySelector(`[onclick*="clickChapter('${lastChapterId}'"]`);
-                            if (chapterElement) {
-                                chapterElement.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-                            }
-                        }, 50);
-                    }, 100);
-                }
             }
             updateBulkActionBar('chapters'); lucide.createIcons();
         }
@@ -1354,11 +1421,12 @@
             document.getElementById('content-empty').classList.add('hidden');
             document.getElementById('content-tabs').classList.remove('hidden');
             
-            // Re-render to update highlighting
-            if (!isAutoOpen) renderChapters();
-            else {
-                // For auto-open, just update the active chapter styling
-                setTimeout(() => renderChapters(), 50);
+            // Re-render to update highlighting (only when user manually clicks)
+            if (!isAutoOpen) {
+                renderChapters();
+                // Scroll content back to top when user picks a new chapter
+                const contentBody = document.getElementById('content-body');
+                if (contentBody) contentBody.scrollTop = 0;
             }
             
             switchTab(activeTab);
@@ -1949,9 +2017,7 @@
             const isMobile = window.innerWidth < 1024;
             
             if (isMobile) {
-                // Mobile: slide from left with overlay
                 const isOpen = !sidebar.classList.contains('-translate-x-full');
-                
                 if (isOpen) {
                     sidebar.classList.add('-translate-x-full');
                     sidebar.classList.remove('flex');
@@ -1962,21 +2028,20 @@
                     overlay.classList.remove('hidden');
                 }
             } else {
-                // Desktop: toggle width
-                const isOpen = sidebar.classList.contains('lg:w-80');
-                
-                if (isOpen) {
-                    // Hide sidebar
-                    sidebar.classList.remove('lg:w-80');
-                    sidebar.classList.add('lg:w-0', 'lg:overflow-hidden', 'lg:opacity-0');
+                // Desktop: collapse width to 0 — content fills the gap naturally
+                const isHidden = sidebar.classList.contains('lg:w-0');
+                const panels = document.getElementById('reader-panels');
+                if (isHidden) {
+                    sidebar.classList.remove('lg:w-0', 'lg:opacity-0', 'lg:pointer-events-none');
+                    if (panels) panels.classList.add('lg:gap-6');
+                    sessionStorage.removeItem('sidebarHidden');
                 } else {
-                    // Show sidebar
-                    sidebar.classList.add('lg:w-80');
-                    sidebar.classList.remove('lg:w-0', 'lg:overflow-hidden', 'lg:opacity-0');
+                    sidebar.classList.add('lg:w-0', 'lg:opacity-0', 'lg:pointer-events-none');
+                    if (panels) panels.classList.remove('lg:gap-6');
+                    sessionStorage.setItem('sidebarHidden', '1');
                 }
             }
             
-            // Refresh icons
             setTimeout(() => lucide.createIcons(), 100);
         }
         
@@ -1984,18 +2049,23 @@
         window.addEventListener('resize', () => {
             const sidebar = document.getElementById('reader-sidebar');
             const overlay = document.getElementById('sidebar-overlay');
+            const panels = document.getElementById('reader-panels');
             if (!sidebar) return;
             
             if (window.innerWidth >= 1024) {
-                // Desktop: restore to open state, remove mobile classes
                 sidebar.classList.remove('-translate-x-full', 'flex');
-                sidebar.classList.add('lg:flex', 'lg:w-80');
-                sidebar.classList.remove('lg:w-0', 'lg:overflow-hidden', 'lg:opacity-0');
                 overlay.classList.add('hidden');
+                if (sessionStorage.getItem('sidebarHidden')) {
+                    sidebar.classList.add('lg:w-0', 'lg:opacity-0', 'lg:pointer-events-none');
+                    if (panels) panels.classList.remove('lg:gap-6');
+                } else {
+                    sidebar.classList.remove('lg:w-0', 'lg:opacity-0', 'lg:pointer-events-none');
+                    if (panels) panels.classList.add('lg:gap-6');
+                }
             } else {
-                // Mobile: reset to closed state, remove desktop classes
                 sidebar.classList.add('-translate-x-full');
-                sidebar.classList.remove('flex', 'lg:w-80', 'lg:w-0', 'lg:overflow-hidden', 'lg:opacity-0');
+                sidebar.classList.remove('flex', 'lg:w-0', 'lg:opacity-0', 'lg:pointer-events-none');
+                if (panels) panels.classList.add('lg:gap-6');
                 overlay.classList.add('hidden');
             }
         });
@@ -2153,11 +2223,11 @@
                         // Open the chapter
                         clickChapter(chapter.id, null, true);
                         
-                        // Scroll to the chapter in sidebar
+                        // Scroll to the chapter in sidebar instantly
                         setTimeout(() => {
                             const chapterElement = document.querySelector(`[onclick*="clickChapter('${chapter.id}'"]`);
                             if (chapterElement) {
-                                chapterElement.scrollIntoView({ behavior: 'auto', block: 'center' });
+                                chapterElement.scrollIntoView({ behavior: 'instant', block: 'center' });
                             }
                         }, 100);
                     } else {
