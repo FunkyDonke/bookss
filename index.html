@@ -36,7 +36,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 
     <style>
-        body { font-family: 'Hind Siliguri', sans-serif; overflow-x: hidden; }
+        body { font-family: 'Hind Siliguri', sans-serif; overflow-x: hidden; height: 100vh; }
         .gradient-text {
             background: linear-gradient(to right, #4f46e5, #06b6d4);
             -webkit-background-clip: text;
@@ -47,6 +47,16 @@
         .fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
+
+        /* Header collapse transition */
+        #reader-subject-header.header-collapsed {
+            max-height: 0 !important;
+            opacity: 0;
+            padding: 0 !important;
+            border-bottom: none !important;
+            pointer-events: none !important;
+            visibility: hidden;
+        }
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -146,8 +156,145 @@
         .toolbar-btn:hover { background-color: #e0e7ff; color: #4338ca; }
         .dark .toolbar-btn:hover { background-color: #374151; color: #a5b4fc; }
 
+        /* Range slider track visible in both light and dark mode */
+        input[type="range"] {
+            accent-color: #4f46e5;
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #c7d2fe;
+            border-radius: 9999px;
+            height: 6px;
+        }
+        .dark input[type="range"]::-webkit-slider-runnable-track {
+            background: #3730a3;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            margin-top: -5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type="range"]::-moz-range-track {
+            background: #c7d2fe;
+            border-radius: 9999px;
+            height: 6px;
+        }
+        .dark input[type="range"]::-moz-range-track {
+            background: #3730a3;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        /* Compact tab bar active state */
+        .compact-tab-btn.tab-active {
+            color: #4f46e5 !important;
+            background-color: #eef2ff;
+            font-weight: 600;
+        }
+        .dark .compact-tab-btn.tab-active {
+            color: #818cf8 !important;
+            background-color: rgba(79,70,229,0.15);
+        }
+
         /* Focus Mode */
         .focus-mode { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; z-index: 9999; border-radius: 0 !important; }
+
+        /* ===== BOOK MODE ===== */
+        /* ── Reader: Scroll mode (default) ── */
+        #reader-scroll-view {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Split mode (two-page book spread) ── */
+        #book-mode-wrapper {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            flex-direction: column;
+            background: #ede8df;
+            overflow: hidden;
+        }
+        .dark #book-mode-wrapper { background: #17120c; }
+        #book-mode-wrapper.active { display: flex; }
+
+        #book-spread {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            padding: 1rem 1.25rem;
+            gap: 0;
+            align-items: stretch;
+            min-height: 0;
+        }
+        #book-spread::after {
+            content: '';
+            position: absolute;
+            left: 50%; top: 1rem; bottom: 1rem;
+            width: 3px;
+            transform: translateX(-50%);
+            background: linear-gradient(to right, rgba(0,0,0,0.18), rgba(0,0,0,0.06) 40%, rgba(0,0,0,0.06) 60%, rgba(0,0,0,0.18));
+            box-shadow: 0 0 14px 3px rgba(0,0,0,0.13);
+            pointer-events: none; z-index: 5; border-radius: 2px;
+        }
+        .book-page {
+            flex: 1; background: #fffef8;
+            display: flex; flex-direction: column;
+            overflow: hidden; position: relative;
+            box-shadow: 2px 3px 16px rgba(0,0,0,0.13), -1px 0 6px rgba(0,0,0,0.04);
+        }
+        .book-page.left-page  { border-radius: 3px 0 0 3px; margin-right: 1.5px; }
+        .book-page.right-page { border-radius: 0 3px 3px 0; margin-left:  1.5px; }
+        .dark .book-page { background: #1d1810; box-shadow: 2px 3px 18px rgba(0,0,0,0.4); }
+        .book-page-content-area {
+            flex: 1; overflow: hidden;
+            padding: 2.2rem 2.6rem 0.5rem; min-height: 0;
+        }
+        .book-page-content-area .prose {
+            font-size: var(--reader-font-size, 1rem);
+            line-height: var(--reader-line-height, 1.8);
+        }
+        .book-page-num {
+            flex-shrink: 0; height: 2rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem; color: #9ca3af;
+            letter-spacing: 0.05em;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            background: inherit;
+        }
+        .dark .book-page-num { color: #6b7280; border-top-color: rgba(255,255,255,0.05); }
+
+        /* Mobile: single page, no spine */
+        @media (max-width: 640px) {
+            #book-spread { padding: 0.5rem; }
+            #book-spread::after { display: none; }
+            .book-page.right-page { display: none; }
+            .book-page.left-page  { border-radius: 4px; margin-right: 0; flex: 1; }
+            .book-page-content-area { padding: 1.4rem 1.2rem 0.5rem; }
+        }
+
+        /* Measuring probe */
+        #book-measure-probe {
+            position: fixed; top: -9999px; left: -9999px;
+            opacity: 0; pointer-events: none; z-index: -1; overflow: visible;
+            /* width set by JS before each measurement */
+        }
 
         /* Loading Overlay for Auto Import */
         #auto-import-overlay { z-index: 9999; }
@@ -163,38 +310,7 @@
     </div>
 
     <!-- Navbar -->
-    <nav class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-50 shadow-sm border-b border-gray-100 dark:border-gray-800 flex-none sticky top-0">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center cursor-pointer gap-2" onclick="goHome()">
-                    <i data-lucide="book-open" class="h-8 w-8 text-indigo-600"></i>
-                    <span class="text-2xl font-bold text-gray-900 dark:text-white">স্মার্ট<span class="text-indigo-600 dark:text-indigo-400">পাঠশালা</span> <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">AUTO</span></span>
-                </div>
-                <div class="flex items-center gap-2 md:gap-4">
-                    <div class="hidden md:flex gap-2">
-                         <!-- Restore Input Hidden -->
-                         <input type="file" id="restore-file-input" class="hidden" accept=".json" onchange="importBackup(this)">
-                         
-                         <button onclick="document.getElementById('restore-file-input').click()" class="text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1">
-                             <i data-lucide="upload-cloud" class="h-4 w-4"></i> রিস্টোর ডাটা
-                         </button>
-                         <button onclick="confirmReset()" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1">
-                            <i data-lucide="rotate-ccw" class="h-4 w-4"></i> রিসেট
-                        </button>
-                        <button onclick="exportData()" class="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1">
-                            <i data-lucide="download" class="h-4 w-4"></i> ব্যাকআপ
-                        </button>
-                        <button onclick="openStatsModal()" class="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1">
-                            <i data-lucide="bar-chart-3" class="h-4 w-4"></i> পরিসংখ্যান
-                        </button>
-                    </div>
-                    <button onclick="toggleTheme()" class="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <i data-lucide="moon" id="theme-icon" class="h-5 w-5"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <input type="file" id="restore-file-input" class="hidden" accept=".json" onchange="importBackup(this)">
 
     <!-- Main Content -->
     <main id="main-container" class="flex-grow w-full overflow-hidden relative">
@@ -250,14 +366,58 @@
                                     <button id="btn-edit-mode" onclick="toggleEditMode()" class="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-3 py-2 rounded-lg text-sm font-medium transition">
                                         <i data-lucide="edit-3" class="h-4 w-4"></i> এডিট
                                     </button>
-                                    <div class="relative group">
-                                         <button class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                                    <div class="relative flex-shrink-0" id="add-btn-wrapper">
+                                         <button onclick="toggleAddMenu()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                                             <i data-lucide="plus" class="h-4 w-4"></i> যুক্ত করুন
                                         </button>
-                                        <div class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 hidden group-hover:block z-50 overflow-hidden">
-                                            <button onclick="openAddSubjectModal()" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2"><i data-lucide="plus-circle" class="h-4 w-4"></i> ম্যানুয়াল যোগ</button>
-                                            <button onclick="openBulkImportSubjectModal()" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm border-t border-gray-100 dark:border-gray-700 flex items-center gap-2"><i data-lucide="list-plus" class="h-4 w-4"></i> বাল্ক ইম্পোর্ট</button>
-                                            <button onclick="exportClassData()" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm border-t border-gray-100 dark:border-gray-700 flex items-center gap-2 text-indigo-600"><i data-lucide="download" class="h-4 w-4"></i> বাল্ক এক্সপোর্ট</button>
+                                        <div id="add-menu-panel" class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden" style="display:none">
+                                            <button onclick="closeAddMenu();openAddSubjectModal();" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2"><i data-lucide="plus-circle" class="h-4 w-4"></i> ম্যানুয়াল যোগ</button>
+                                            <button onclick="closeAddMenu();openBulkImportSubjectModal();" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm border-t border-gray-100 dark:border-gray-700 flex items-center gap-2"><i data-lucide="list-plus" class="h-4 w-4"></i> বাল্ক ইম্পোর্ট</button>
+                                            <button onclick="closeAddMenu();exportClassData();" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm border-t border-gray-100 dark:border-gray-700 flex items-center gap-2 text-indigo-600"><i data-lucide="download" class="h-4 w-4"></i> বাল্ক এক্সপোর্ট</button>
+                                        </div>
+                                    </div>
+                                    <!-- Tools button for subjects page -->
+                                    <div class="relative flex-shrink-0" id="tools-menu-wrapper-subjects">
+                                        <button onclick="toggleToolsMenuSubjects()" title="টুলস মেনু"
+                                            class="flex items-center gap-1.5 p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                                            <i data-lucide="settings-2" class="h-5 w-5"></i>
+                                        </button>
+                                        <div id="tools-menu-panel-subjects" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden min-w-[190px]" style="position:fixed;z-index:99999;display:none">
+                                            <div class="flex flex-col py-1">
+                                                <button onclick="closeToolsMenuSubjects();document.getElementById('restore-file-input').click();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-green-600 dark:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                                    <i data-lucide="upload-cloud" class="h-4 w-4"></i> রিস্টোর ডাটা
+                                                </button>
+                                                <button onclick="closeToolsMenuSubjects();confirmReset();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                                    <i data-lucide="rotate-ccw" class="h-4 w-4"></i> রিসেট
+                                                </button>
+                                                <button onclick="closeToolsMenuSubjects();exportData();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                                    <i data-lucide="download" class="h-4 w-4"></i> ব্যাকআপ
+                                                </button>
+                                                <button onclick="closeToolsMenuSubjects();openStatsModal();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                                    <i data-lucide="bar-chart-3" class="h-4 w-4"></i> পরিসংখ্যান
+                                                </button>
+                                                <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                                <button onclick="closeToolsMenuSubjects();toggleTheme();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                                    <i data-lucide="moon" class="h-4 w-4"></i> থিম পরিবর্তন
+                                                </button>
+                                                <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                                <div class="px-4 py-3">
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
+                                                            <i data-lucide="type" class="h-4 w-4"></i>
+                                                            <span>ফন্ট সাইজ</span>
+                                                        </div>
+                                                        <span id="font-size-label-sub" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">100%</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-xs text-gray-400 select-none font-bold" style="font-size:10px">A</span>
+                                                        <input type="range" id="font-size-slider-sub" min="10" max="200" step="1" value="100"
+                                                            oninput="applyFontSize(this.value)"
+                                                            class="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-indigo-600">
+                                                        <span class="text-sm text-gray-400 select-none font-bold">A</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -303,44 +463,128 @@
                         </div>
 
                         <!-- Content Area (Reader Features) - Full Width Responsive -->
-                        <div id="reader-content-area" class="flex-grow h-full w-full bg-white dark:bg-gray-900 lg:rounded-2xl shadow-sm lg:border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col relative">
-                            <!-- Content Header with Tabs -->
-                            <div id="reader-subject-header" class="flex-none border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                                <div class="p-4 md:p-6 pb-2">
-                                    <div class="flex items-start gap-3">
-                                        <!-- Back button (always visible) -->
-                                        <button onclick="showSubjects()" class="flex-shrink-0 p-2 mt-1 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors" title="বিষয় তালিকায় ফিরুন">
-                                            <i data-lucide="arrow-left" class="h-5 w-5"></i>
+                        <div id="reader-content-area" class="flex-grow h-full w-full bg-white dark:bg-gray-900 lg:rounded-2xl shadow-sm lg:border border-gray-100 dark:border-gray-800 flex flex-col relative" style="overflow:hidden">
+
+                                <!-- Compact Tab Bar — always visible -->
+                                <div id="compact-tab-bar" class="flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-2 py-0 flex-shrink-0">
+                                    <div class="flex items-center overflow-x-auto" style="scrollbar-width:none">
+                                        <button onclick="showSubjects()" class="flex-shrink-0 p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mr-1" title="বিষয় তালিকায়">
+                                            <i data-lucide="arrow-left" class="h-4 w-4"></i>
                                         </button>
-                                        <!-- Toggle Sidebar Button -->
-                                        <button onclick="toggleSidebar()" class="flex-shrink-0 p-2 mt-1 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors" title="সূচিপত্র দেখান/লুকান">
-                                            <i data-lucide="panel-left" class="h-5 w-5"></i>
+                                        <button onclick="toggleSidebar()" class="flex-shrink-0 p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mr-2" title="সূচিপত্র">
+                                            <i data-lucide="panel-left" class="h-4 w-4"></i>
                                         </button>
-                                        <div class="flex-grow min-w-0">
-                                            <h1 id="chapter-title" class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white truncate">স্বাগতম</h1>
-                                            <p id="reader-subject-title" class="text-xs md:text-sm text-gray-500 mt-1 truncate">বিষয় নির্বাচন করুন</p>
-                                        </div>
+                                        <button onclick="switchTab('text')" id="compact-tab-btn-text" class="compact-tab-btn flex-shrink-0 px-3 py-2 text-xs font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 flex items-center gap-1.5 whitespace-nowrap rounded-lg transition">
+                                            <i data-lucide="file-text" class="h-3.5 w-3.5 flex-shrink-0"></i>
+                                            <span>ডিজিটাল পাঠ</span>
+                                        </button>
+                                        <button onclick="switchTab('pdf')" id="compact-tab-btn-pdf" class="compact-tab-btn flex-shrink-0 px-3 py-2 text-xs font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 flex items-center gap-1.5 whitespace-nowrap rounded-lg transition">
+                                            <i data-lucide="file" class="h-3.5 w-3.5 flex-shrink-0"></i>
+                                            <span>মূল বই</span>
+                                        </button>
+                                        <button onclick="switchTab('video')" id="compact-tab-btn-video" class="compact-tab-btn flex-shrink-0 px-3 py-2 text-xs font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 flex items-center gap-1.5 whitespace-nowrap rounded-lg transition">
+                                            <i data-lucide="youtube" class="h-3.5 w-3.5 flex-shrink-0"></i>
+                                            <span>টিউটোরিয়াল</span>
+                                        </button>
+                                        <button onclick="switchTab('qna')" id="compact-tab-btn-qna" class="compact-tab-btn flex-shrink-0 px-3 py-2 text-xs font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 flex items-center gap-1.5 whitespace-nowrap rounded-lg transition">
+                                            <i data-lucide="help-circle" class="h-3.5 w-3.5 flex-shrink-0"></i>
+                                            <span>প্রশ্ন ও উত্তর</span>
+                                        </button>
+                                    </div>
+                                    <div class="flex-shrink-0 pl-2 border-l border-gray-100 dark:border-gray-800">
+                                        <button onclick="toggleToolsMenu()" id="compact-tools-btn" title="টুলস" class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                            <i data-lucide="settings-2" class="h-4 w-4"></i>
+                                        </button>
                                     </div>
                                 </div>
 
-                                
-                                <!-- Tabs -->
-                                <div id="content-tabs" class="flex px-6 gap-6 overflow-x-auto hidden">
-                                    <button onclick="switchTab('text')" class="tab-btn pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 whitespace-nowrap" id="tab-btn-text">
-                                        <i data-lucide="file-text" class="h-4 w-4"></i> ডিজিটাল পাঠ
+                                <!-- Tools menu panel (moved to body by JS) -->
+                                <div id="tools-menu-panel" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden min-w-[220px]" style="position:fixed;z-index:99999;display:none">
+                                <div class="flex flex-col py-1">
+                                    <!-- Split Mode Toggle -->
+                                    <button onclick="closeToolsMenu();toggleSplitMode();" id="tools-split-mode-btn" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                        <i data-lucide="columns-2" class="h-4 w-4"></i>
+                                        <span>স্প্লিট মোড</span>
+                                        <span id="tools-split-mode-badge" class="ml-auto text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">বন্ধ</span>
                                     </button>
-                                    <button onclick="switchTab('pdf')" class="tab-btn pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 whitespace-nowrap" id="tab-btn-pdf">
-                                        <i data-lucide="file" class="h-4 w-4"></i> মূল বই (PDF)
+                                    <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    <!-- Tab actions (shown contextually) -->
+                                    <div id="tools-tab-actions-text" style="display:none;flex-direction:column">
+                                        <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">ডিজিটাল পাঠ</div>
+                                        <button onclick="closeToolsMenu();openAddTextLinkModal();" class="flex items-center gap-2.5 px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                            <i data-lucide="cloud" class="h-4 w-4"></i> ক্লাউড লিংক
+                                        </button>
+                                        <label class="cursor-pointer flex items-center gap-2.5 px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                            <i data-lucide="upload" class="h-4 w-4"></i> ফাইল আপলোড
+                                            <input type="file" class="hidden" accept=".txt,.md" onchange="closeToolsMenu();loadLocalTextFile(this)">
+                                        </label>
+                                        <button onclick="closeToolsMenu();openEditContentModal('text');" class="flex items-center gap-2.5 px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                            <i data-lucide="edit" class="h-4 w-4"></i> এডিট
+                                        </button>
+                                        <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    </div>
+                                    <div id="tools-tab-actions-pdf" style="display:none;flex-direction:column">
+                                        <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">মূল বই (PDF)</div>
+                                        <label class="cursor-pointer flex items-center gap-2.5 px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                            <i data-lucide="folder-open" class="h-4 w-4"></i> Local PDF
+                                            <input type="file" class="hidden" accept="application/pdf" onchange="closeToolsMenu();loadLocalPdfFile(this)">
+                                        </label>
+                                        <button onclick="closeToolsMenu();openEditContentModal('pdf');" class="flex items-center gap-2.5 px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                            <i data-lucide="settings" class="h-4 w-4"></i> ম্যানেজ
+                                        </button>
+                                        <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    </div>
+                                    <div id="tools-tab-actions-qna" style="display:none;flex-direction:column">
+                                        <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">প্রশ্ন ও উত্তর</div>
+                                        <div class="flex items-center gap-2 px-4 py-2">
+                                            <div class="bg-gray-200 dark:bg-gray-700 rounded-lg p-0.5 flex">
+                                                <button onclick="toggleQnaView('list')" id="tools-btn-qna-list" class="px-2 py-1 text-xs rounded-md bg-white dark:bg-gray-600 text-gray-800 dark:text-white font-medium shadow-sm transition">List</button>
+                                                <button onclick="toggleQnaView('card')" id="tools-btn-qna-card" class="px-2 py-1 text-xs rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 transition">Flash</button>
+                                            </div>
+                                        </div>
+                                        <button onclick="closeToolsMenu();openEditContentModal('qna');" class="flex items-center gap-2.5 px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                            <i data-lucide="plus-circle" class="h-4 w-4"></i> প্রশ্ন যুক্ত করুন
+                                        </button>
+                                        <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    </div>
+                                    <!-- System -->
+                                    <button onclick="closeToolsMenu();document.getElementById('restore-file-input').click();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-green-600 dark:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                        <i data-lucide="upload-cloud" class="h-4 w-4"></i> রিস্টোর ডাটা
                                     </button>
-                                    <button onclick="switchTab('video')" class="tab-btn pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 whitespace-nowrap" id="tab-btn-video">
-                                        <i data-lucide="youtube" class="h-4 w-4"></i> টিউটোরিয়াল
+                                    <button onclick="closeToolsMenu();confirmReset();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                        <i data-lucide="rotate-ccw" class="h-4 w-4"></i> রিসেট
                                     </button>
-                                    <button onclick="switchTab('qna')" class="tab-btn pb-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 whitespace-nowrap" id="tab-btn-qna">
-                                        <i data-lucide="help-circle" class="h-4 w-4"></i> প্রশ্ন ও উত্তর
+                                    <button onclick="closeToolsMenu();exportData();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                        <i data-lucide="download" class="h-4 w-4"></i> ব্যাকআপ
                                     </button>
+                                    <button onclick="closeToolsMenu();openStatsModal();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                        <i data-lucide="bar-chart-3" class="h-4 w-4"></i> পরিসংখ্যান
+                                    </button>
+                                    <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    <button onclick="closeToolsMenu();toggleTheme();" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full text-left">
+                                        <i data-lucide="moon" id="theme-icon" class="h-4 w-4"></i> থিম পরিবর্তন
+                                    </button>
+                                    <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    <div class="px-4 py-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
+                                                <i data-lucide="type" class="h-4 w-4"></i>
+                                                <span>ফন্ট সাইজ</span>
+                                            </div>
+                                            <span id="font-size-label" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">100%</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs text-gray-400 select-none font-bold" style="font-size:10px">A</span>
+                                            <input type="range" id="font-size-slider" min="10" max="200" step="1" value="100"
+                                                oninput="applyFontSize(this.value)"
+                                                class="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-indigo-600">
+                                            <span class="text-sm text-gray-400 select-none font-bold">A</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                                </div><!-- end tools-menu-panel -->
 
+                                <!-- Content Body -->
                             <!-- Content Body -->
                             <div id="content-body" class="flex-grow overflow-y-auto p-0 relative bg-white dark:bg-gray-900 custom-scrollbar" style="scroll-behavior: auto;">
                                 
@@ -351,36 +595,44 @@
                                 </div>
 
                                 <!-- Tab: Text (Digital) -->
-                                <div id="tab-content-text" class="hidden h-full flex flex-col">
-                                    <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/30">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs text-gray-500 font-mono hidden md:inline">FORMAT: MARKDOWN / RICH TEXT</span>
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <button onclick="openAddTextLinkModal()" class="text-purple-600 hover:bg-purple-50 dark:hover:bg-gray-700 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 transition">
-                                                <i data-lucide="cloud" class="h-3.5 w-3.5"></i> ক্লাউড লিংক
-                                            </button>
-                                            <label class="cursor-pointer text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 transition">
-                                                <i data-lucide="upload" class="h-3.5 w-3.5"></i> ফাইল (Local)
-                                                <input type="file" class="hidden" accept=".txt,.md" onchange="loadLocalTextFile(this)">
-                                            </label>
-                                            <button onclick="openEditContentModal('text')" class="text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 transition">
-                                                <i data-lucide="edit" class="h-3.5 w-3.5"></i> এডিট
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div id="tab-content-text" class="hidden flex flex-col min-h-full" style="position:relative">
+
                                     <div id="loading-indicator" class="hidden flex justify-center items-center py-10">
                                         <i data-lucide="loader-2" class="animate-spin h-8 w-8 text-indigo-600"></i>
                                     </div>
-                                    <div id="render-markdown" class="prose dark:prose-invert max-w-none p-6 md:p-10"></div>
+
+                                    <!-- Scroll mode view (default) -->
+                                    <div id="reader-scroll-view">
+                                        <div id="render-markdown" class="prose dark:prose-invert max-w-none p-6 md:p-10" style="font-size: var(--reader-font-size, 1rem); line-height: var(--reader-line-height, 1.8);"></div>
+                                    </div>
+
                                     <div id="empty-text-msg" class="hidden flex-grow flex flex-col items-center justify-center text-gray-400">
                                         <i data-lucide="file-text" class="h-10 w-10 mb-2 opacity-30"></i>
                                         <p>কোন টেক্সট নেই</p>
                                     </div>
+
+                                    <!-- Split mode overlay -->
+                                    <div id="book-mode-wrapper">
+                                        <div id="book-spread">
+                                            <div class="book-page left-page" id="book-left-page">
+                                                <div class="book-page-content-area" id="book-left-content-area">
+                                                    <div id="book-left-content" class="prose dark:prose-invert max-w-none"></div>
+                                                </div>
+                                                <div class="book-page-num" id="book-left-num"></div>
+                                            </div>
+                                            <div class="book-page right-page" id="book-right-page">
+                                                <div class="book-page-content-area" id="book-right-content-area">
+                                                    <div id="book-right-content" class="prose dark:prose-invert max-w-none"></div>
+                                                </div>
+                                                <div class="book-page-num" id="book-right-num"></div>
+                                            </div>
+                                        </div>
+                                        <div id="book-measure-probe" style="position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;z-index:-1;overflow:visible;"></div>
+                                    </div>
                                 </div>
 
                                 <!-- Tab: PDF (Advanced Multi-Doc) -->
-                                <div id="tab-content-pdf" class="hidden h-full flex flex-row">
+                                <div id="tab-content-pdf" class="hidden h-full flex flex-row" style="overflow:hidden">
                                     <!-- PDF Sidebar List -->
                                     <div id="pdf-sidebar" class="w-48 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden flex-col">
                                         <div class="p-3 border-b border-gray-200 dark:border-gray-700 font-bold text-xs text-gray-500">RESOURCES</div>
@@ -391,20 +643,14 @@
                                     </div>
 
                                     <div class="flex-grow flex flex-col h-full relative">
-                                        <div class="p-2 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/30">
-                                            <button id="toggle-pdf-sidebar" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="Toggle List">
-                                                <i data-lucide="panel-left" class="h-4 w-4 text-gray-500"></i>
-                                            </button>
-                                            <div class="flex gap-2">
-                                                <label class="cursor-pointer text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-3 py-1 rounded text-xs flex items-center gap-1 transition">
-                                                    <i data-lucide="folder-open" class="h-3 w-3"></i> Local View
-                                                    <input type="file" class="hidden" accept="application/pdf" onchange="loadLocalPdfFile(this)">
-                                                </label>
-                                                <button onclick="openEditContentModal('pdf')" class="text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-3 py-1 rounded text-xs flex items-center gap-1 transition">
-                                                    <i data-lucide="settings" class="h-3 w-3"></i> সেটিংস
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <!-- Floating sidebar toggle button -->
+                                        <button id="toggle-pdf-sidebar"
+                                            title="PDF তালিকা দেখান/লুকান"
+                                            style="position:absolute;bottom:8px;left:8px;z-index:10"
+                                            class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow text-gray-600 dark:text-gray-300 text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                            <i data-lucide="panel-left" class="h-3.5 w-3.5"></i>
+                                        </button>
+
                                         <iframe id="pdf-frame" class="w-full flex-grow border-none" src=""></iframe>
                                         <div id="empty-pdf-msg" class="hidden flex-grow flex flex-col items-center justify-center text-gray-400">
                                             <i data-lucide="file-question" class="h-10 w-10 mb-2 opacity-30"></i>
@@ -414,42 +660,1643 @@
                                     </div>
                                 </div>
 
-                                <!-- Tab: Video -->
-                                <div id="tab-content-video" class="hidden h-full flex flex-col">
-                                    <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/30">
-                                        <span class="text-xs text-gray-500">ভিডিও টিউটোরিয়াল (YouTube / Cloud / Local)</span>
-                                        <div class="flex gap-2">
-                                            <label class="cursor-pointer text-green-600 hover:bg-green-50 dark:hover:bg-gray-700 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 transition">
-                                                <i data-lucide="film" class="h-3.5 w-3.5"></i> লোকাল ভিডিও
-                                                <input type="file" class="hidden" accept="video/*" onchange="loadLocalVideoFile(this)">
-                                            </label>
-                                            <button onclick="openEditContentModal('video')" class="text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 transition">
-                                                <i data-lucide="plus-circle" class="h-3.5 w-3.5"></i> ভিডিও লিংক
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div id="video-grid" class="p-6 flex flex-wrap gap-6 items-start content-start"></div>
-                                    <div id="empty-video-msg" class="hidden flex-grow flex flex-col items-center justify-center text-gray-400 py-20">
-                                        <i data-lucide="video-off" class="h-10 w-10 mb-2 opacity-30"></i>
-                                        <p>কোন ভিডিও টিউটোরিয়াল নেই</p>
-                                    </div>
+                                <!-- Tab: Video (Advanced YouTube) -->
+                                <div id="tab-content-video" class="hidden h-full flex-col" style="min-height:0;overflow:hidden">
+                                    <iframe id="youtube-tab-iframe"
+                                        style="width:100%;height:100%;border:none;display:block;flex:1"
+                                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-popups-to-escape-sandbox"
+                                        srcdoc="<!DOCTYPE html>
+<html lang=&quot;bn&quot;>
+<head>
+  <meta charset=&quot;UTF-8&quot;>
+  <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+  <title>YouTube Clone</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src=&quot;https://cdn.tailwindcss.com&quot;></script>
+  
+  <!-- FontAwesome for Icons -->
+  <link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css&quot;>
+  
+  <!-- React &amp; ReactDOM CDN -->
+  <script src=&quot;https://unpkg.com/react@18/umd/react.production.min.js&quot; crossorigin></script>
+  <script src=&quot;https://unpkg.com/react-dom@18/umd/react-dom.production.min.js&quot; crossorigin></script>
+  
+  <!-- Babel for JSX compilation in browser -->
+  <script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;></script>
+
+  <!-- YouTube Iframe API -->
+  <script src=&quot;https://www.youtube.com/iframe_api&quot;></script>
+  <script>
+    window.ytApiLoaded = false;
+    function onYouTubeIframeAPIReady() {
+      window.ytApiLoaded = true;
+      window.dispatchEvent(new Event('yt-api-ready'));
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #888; }
+  </style>
+</head>
+<body class=&quot;bg-[#0f0f0f] text-white font-sans&quot;>
+  <div id=&quot;root&quot;></div>
+
+  <script type=&quot;text/babel&quot;>
+
+    // Chapter-scoped localStorage — every key is prefixed with chapter ID
+    window._chapterId = window._chapterId || 'global';
+    function lsKey(name) { return 'ytClone_' + window._chapterId + '_' + name; }
+
+    const { useState, useEffect, useRef } = React;
+
+    const initialVideos = [];
+
+    function parseMediaInput(input) {
+      let videoId = null;
+      let listId = null;
+      let driveId = null;
+      let externalUrl = null;
+      let title = '';
+      let urlStr = input.replace(/&amp;amp;/g, '&amp;');
+
+      const iframeMatch = urlStr.match(/src=[&quot;'](.*?)[&quot;']/);
+      if (iframeMatch) urlStr = iframeMatch[1];
+      const titleMatch = input.match(/title=[&quot;'](.*?)[&quot;']/);
+      if (titleMatch) title = titleMatch[1];
+      
+      if(title.toLowerCase() === 'youtube video player' || title.toLowerCase() === 'custom video') title = ''; 
+
+      try {
+        if (urlStr.includes('photos.app.goo.gl') || urlStr.includes('photos.google.com')) {
+            externalUrl = urlStr;
+            return { videoId, listId, driveId, externalUrl, title };
+        }
+
+        if (urlStr.includes('drive.google.com')) {
+            const driveMatch = urlStr.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (driveMatch) driveId = driveMatch[1];
+            return { videoId, listId, driveId, title };
+        }
+
+        if (!urlStr.startsWith('http') &amp;&amp; !urlStr.startsWith('//')) urlStr = 'https://' + urlStr;
+        else if (urlStr.startsWith('//')) urlStr = 'https:' + urlStr;
+        
+        const url = new URL(urlStr);
+        if (url.searchParams.has('v')) videoId = url.searchParams.get('v');
+        if (url.searchParams.has('list')) listId = url.searchParams.get('list');
+        
+        if (url.pathname.startsWith('/embed/')) {
+          const pathParts = url.pathname.split('/');
+          const id = pathParts[pathParts.length - 1];
+          if (id &amp;&amp; id !== 'videoseries') videoId = id;
+        } else if (url.hostname.includes('youtu.be')) {
+          videoId = url.pathname.slice(1);
+        }
+      } catch (e) {
+        console.error(&quot;URL Error&quot;, e);
+      }
+      return { videoId, listId, driveId, externalUrl, title };
+    }
+
+    const generateThumbnail = (file) => {
+        return new Promise((resolve) => {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.src = URL.createObjectURL(file);
+            video.muted = true;
+            video.playsInline = true;
+            
+            video.addEventListener('loadedmetadata', () => {
+                video.currentTime = Math.min(1, video.duration / 2 || 0); 
+            });
+
+            video.addEventListener('seeked', () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth || 640;
+                    canvas.height = video.videoHeight || 360;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg'));
+                } catch (e) {
+                    resolve('https://placehold.co/640x360/10B981/FFFFFF/png?text=Local+Video');
+                }
+                URL.revokeObjectURL(video.src);
+            });
+
+            video.addEventListener('error', () => {
+                resolve('https://placehold.co/640x360/10B981/FFFFFF/png?text=Local+Video');
+                URL.revokeObjectURL(video.src);
+            });
+        });
+    };
+
+    function HoverPlayer({ video, savedTime, onPlay }) {
+        const playerContainerRef = useRef(null);
+        const playerRef = useRef(null);
+
+        if (video.provider === 'local') {
+            let blobUrl = video.blobUrl;
+            let currentId = video.id;
+            
+            if (video.type === 'local_playlist' &amp;&amp; video.videoObjects?.length > 0) {
+                blobUrl = video.videoObjects[0].blobUrl;
+                currentId = video.videoObjects[0].id;
+            }
+
+            return (
+                <div className=&quot;absolute inset-0 z-10 bg-black rounded-lg overflow-hidden group/player pointer-events-auto&quot;>
+                    <video 
+                        src={blobUrl} 
+                        className=&quot;w-full h-full object-cover pointer-events-auto&quot; 
+                        autoPlay 
+                        muted 
+                        controls
+                        onLoadedMetadata={(e) => {
+                             const times = JSON.parse(localStorage.getItem(lsKey('Times')) || '{}');
+                             if (times[currentId] &amp;&amp; times[currentId] > 0) {
+                                 e.target.currentTime = times[currentId];
+                             }
+                        }}
+                    />
+                    <div 
+                        className=&quot;absolute top-0 left-0 right-0 bottom-[45px] z-20 cursor-pointer&quot;
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onPlay();
+                        }}
+                    ></div>
+                </div>
+            );
+        }
+
+        useEffect(() => {
+            if (!window.YT || !video.videoId) return;
+            
+            const playerDiv = document.createElement('div');
+            playerDiv.style.width = '100%';
+            playerDiv.style.height = '100%';
+            playerContainerRef.current.appendChild(playerDiv);
+
+            playerRef.current = new window.YT.Player(playerDiv, {
+                videoId: video.videoId,
+                playerVars: { 
+                    autoplay: 1, 
+                    mute: 1, 
+                    start: savedTime || 0, 
+                    controls: 1, 
+                    modestbranding: 1, 
+                    playsinline: 1, 
+                    rel: 0,
+                    showinfo: 0,
+                    fs: 0
+                }
+            });
+
+            return () => {
+                if (playerRef.current &amp;&amp; typeof playerRef.current.destroy === 'function') {
+                    playerRef.current.destroy();
+                }
+                if (playerContainerRef.current) {
+                    playerContainerRef.current.innerHTML = '';
+                }
+            };
+        }, [video.videoId, savedTime]);
+
+        return (
+            <div className=&quot;absolute inset-0 z-10 bg-black rounded-lg overflow-hidden group/player pointer-events-auto&quot;>
+                <div className=&quot;w-full h-full pointer-events-auto&quot; ref={playerContainerRef}></div>
+                <div 
+                    className=&quot;absolute top-0 left-0 right-0 bottom-[45px] z-20 cursor-pointer&quot;
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onPlay();
+                    }}
+                ></div>
+            </div>
+        );
+    }
+
+    function SidebarToggle({ icon, label, isExpanded, onToggle, children, isOpen, scrollable }) {
+        return (
+            <>
+                <div 
+                    onClick={onToggle} 
+                    className={`flex items-center ${isOpen ? 'justify-start px-3' : 'justify-center flex-col'} py-2.5 my-1 rounded-xl cursor-pointer transition-colors ${isExpanded ? 'bg-white/10 font-bold' : 'hover:bg-white/10'}`}
+                >
+                    <div className={`flex items-center justify-center ${isOpen ? 'mr-4' : 'mb-1'} ${isExpanded ? 'text-white' : 'text-gray-200'}`}>{icon}</div>
+                    <span className={`${isOpen ? 'text-sm' : 'text-[10px]'} flex-1 ${isExpanded ? 'text-white font-semibold' : 'text-gray-200'} whitespace-nowrap overflow-hidden text-ellipsis`}>{label}</span>
+                    {isOpen &amp;&amp; <i className={`fas fa-chevron-down text-xs text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}></i>}
+                </div>
+                {isExpanded &amp;&amp; isOpen &amp;&amp; (
+                    <div className={`flex flex-col gap-2 px-2 mt-1 mb-3 ${scrollable ? 'max-h-[260px] overflow-y-auto custom-scrollbar pr-1' : ''}`}>
+                        {children}
+                    </div>
+                )}
+            </>
+        );
+    }
+
+    function App() {
+      const [videos, setVideos] = useState(() => {
+        // Always use chapter videos sent from SmartPathshala via postMessage
+        return window._chapterInitVideos || [];
+      });
+
+      const [currentVideo, setCurrentVideo] = useState(null);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+      
+      const [watchHistory, setWatchHistory] = useState([]);
+      const [lastWatched, setLastWatched] = useState(null);
+      
+      const [isAllVideosExpanded, setIsAllVideosExpanded] = useState(false);
+      const [isAllPlaylistsExpanded, setIsAllPlaylistsExpanded] = useState(false);
+      const [isCurrentPlaylistExpanded, setIsCurrentPlaylistExpanded] = useState(true);
+      const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+      
+      const [gridCols, setGridCols] = useState(4);
+
+      const [playlistQueue, setPlaylistQueue] = useState([]);
+      const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(0);
+      const [fetchedMeta, setFetchedMeta] = useState({});
+
+      const [alertState, setAlertState] = useState({ isOpen: false, message: '' });
+      const [confirmState, setConfirmState] = useState({ isOpen: false, message: '', targetId: null });
+
+      const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+      const [isLocalModalOpen, setIsLocalModalOpen] = useState(false);
+      
+      const [newMediaInput, setNewMediaInput] = useState({ link: '', title: '', channel: '' });
+      const [isCreateListModalOpen, setIsCreateListModalOpen] = useState(false);
+      const [newListTitle, setNewListTitle] = useState('');
+      const [selectedVideoIds, setSelectedVideoIds] = useState([]);
+
+      const [isMiniplayer, setIsMiniplayer] = useState(false);
+      const [isTheaterMode, setIsTheaterMode] = useState(false);
+      const [playerRect, setPlayerRect] = useState(null); 
+      const [isDragging, setIsDragging] = useState(false);
+      const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+      const [resizeState, setResizeState] = useState({ active: false, dir: null, startX: 0, startY: 0, startLeft: 0, startTop: 0, startWidth: 0, startHeight: 0 });
+
+      const [progressData, setProgressData] = useState({ times: {}, durations: {} });
+      const [hoveredVideo, setHoveredVideo] = useState(null);
+      const hoverTimeout = useRef(null);
+
+      const [ytReady, setYtReady] = useState(window.ytApiLoaded);
+      const ytContainerRef = useRef(null);
+      const playerRef = useRef(null);
+      const timeIntervalRef = useRef(null);
+      const localVideoRef = useRef(null);
+      const popupWindowRef = useRef(null); // পপ-আপ উইন্ডোর রেফারেন্স ধরে রাখার জন্য নতুন Ref
+      
+      const [autoPlay, setAutoPlay] = useState(false); 
+
+      const currentVideoData = currentVideo ? (videos.find(v => v.id === currentVideo.id) || currentVideo) : null;
+
+      useEffect(() => {
+        // Chapter-scoped: load only this chapter's history &amp; progress, never auto-miniplayer
+        const savedHistory = localStorage.getItem(lsKey('History'));
+        if (savedHistory) {
+            let parsedHistory = JSON.parse(savedHistory).filter(v => v.provider !== 'local');
+            setWatchHistory(parsedHistory);
+        }
+        setProgressData({
+            times: JSON.parse(localStorage.getItem(lsKey('Times')) || '{}'),
+            durations: JSON.parse(localStorage.getItem(lsKey('Durations')) || '{}')
+        });
+        const handleReady = () => setYtReady(true);
+        window.addEventListener('yt-api-ready', handleReady);
+        return () => window.removeEventListener('yt-api-ready', handleReady);
+      }, []);
+
+      useEffect(() => {
+        let isMounted = true;
+        const fetchMissingTitles = () => {
+            if(currentVideoData?.provider === 'local') return;
+            playlistQueue.forEach(vidId => {
+                const existsLocally = videos.find(v => v.videoId === vidId);
+                if (!existsLocally) {
+                    setFetchedMeta(prev => {
+                        if (prev[vidId]) return prev;
+                        fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vidId}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data &amp;&amp; data.title &amp;&amp; isMounted) {
+                                    setFetchedMeta(current => ({ ...current, [vidId]: { title: data.title, channel: data.author_name } }));
+                                }
+                            }).catch(() => {});
+                        return { ...prev, [vidId]: { loading: true } };
+                    });
+                }
+            });
+        };
+
+        if (playlistQueue.length > 0) fetchMissingTitles();
+        return () => { isMounted = false; };
+      }, [playlistQueue, videos, currentVideoData]);
+
+      const handleMouseEnter = (video) => {
+          if (video.type === 'video' &amp;&amp; video.provider !== 'gdrive' &amp;&amp; video.provider !== 'external' &amp;&amp; (video.videoId || video.blobUrl)) {
+              hoverTimeout.current = setTimeout(() => {
+                  setHoveredVideo(video.id);
+              }, 600); 
+          }
+      };
+
+      const handleMouseLeave = () => {
+          if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+          setHoveredVideo(null);
+      };
+
+      const handleLocalFiles = async (e, isFolder) => {
+          const files = Array.from(e.target.files).filter(f => f.type.startsWith('video/'));
+          if (files.length === 0) {
+              setAlertState({ isOpen: true, message: 'কোনো সঠিক ভিডিও ফাইল পাওয়া যায়নি!' });
+              return;
+          }
+
+          setIsLocalModalOpen(false); 
+          
+          setTimeout(() => {
+              setAlertState({ isOpen: true, message: 'ফাইলগুলো প্রসেস করা হচ্ছে, দয়া করে একটু অপেক্ষা করুন...' });
+          }, 100);
+
+          let updated = [...videos];
+
+          if (isFolder &amp;&amp; files.length > 1) {
+              const folderName = files[0].webkitRelativePath.split('/')[0] || 'লোকাল ফোল্ডার';
+              const playlistId = 'local-folder-' + Date.now();
+              
+              const vidsWithThumbs = [];
+              for(let i=0; i<files.length; i++){
+                  const f = files[i];
+                  const thumb = await generateThumbnail(f);
+                  vidsWithThumbs.push({
+                      id: playlistId + '-vid-' + i,
+                      videoId: playlistId + '-vid-' + i,
+                      title: f.name.replace(/\.[^/.]+$/, &quot;&quot;),
+                      channel: 'Local Storage',
+                      views: 'Local File',
+                      thumbnail: thumb,
+                      type: 'video',
+                      provider: 'local',
+                      fileObj: f,
+                      blobUrl: URL.createObjectURL(f)
+                  });
+              }
+
+              const playlist = {
+                  id: playlistId,
+                  listId: playlistId,
+                  title: folderName,
+                  channel: 'Local Storage',
+                  views: `${vidsWithThumbs.length} ভিডিও`,
+                  thumbnail: vidsWithThumbs[0]?.thumbnail || 'https://placehold.co/640x360/3B82F6/FFFFFF/png?text=Local+Folder',
+                  type: 'local_playlist',
+                  provider: 'local',
+                  videoObjects: vidsWithThumbs
+              };
+              
+              updated = [playlist, ...videos];
+          } else {
+              const newVideos = [];
+              for(let i=0; i<files.length; i++){
+                  const f = files[i];
+                  const thumb = await generateThumbnail(f);
+                  newVideos.push({
+                      id: 'local-vid-' + Date.now() + '-' + i,
+                      videoId: 'local-vid-' + Date.now() + '-' + i,
+                      title: f.name.replace(/\.[^/.]+$/, &quot;&quot;),
+                      channel: 'Local Storage',
+                      views: 'Local File',
+                      thumbnail: thumb,
+                      type: 'video',
+                      provider: 'local',
+                      fileObj: f,
+                      blobUrl: URL.createObjectURL(f)
+                  });
+              }
+              updated = [...newVideos, ...videos];
+          }
+
+          setVideos(updated);
+          
+          const storable = updated.filter(v => v.provider !== 'local');
+          localStorage.setItem(lsKey('Videos'), JSON.stringify(storable));
+        try { window.parent.postMessage({ type: 'ytVideosChanged', videos: storable, chapterId: window._chapterId }, '*'); } catch(e) {}
+          
+          setAlertState({ isOpen: false, message: '' }); 
+      };
+
+      useEffect(() => {
+        if (!ytReady) return;
+        
+        if (!currentVideo) {
+            if (playerRef.current) {
+                playerRef.current.destroy();
+                playerRef.current = null;
+            }
+            return;
+        }
+
+        if (currentVideo.provider === 'gdrive' || currentVideo.driveId || currentVideo.provider === 'local' || currentVideo.provider === 'external') {
+            if (playerRef.current &amp;&amp; typeof playerRef.current.pauseVideo === 'function') {
+                playerRef.current.pauseVideo();
+            }
+            return;
+        }
+
+        const currentTimes = JSON.parse(localStorage.getItem(lsKey('Times')) || '{}');
+        const startSeconds = currentTimes[currentVideo.id] || 0;
+
+        const savedIndexes = JSON.parse(localStorage.getItem(lsKey('PlaylistIndexes')) || '{}');
+        const startIndex = savedIndexes[currentVideo.id] || 0;
+
+        const isPlaylist = currentVideo.type === 'playlist';
+        const isLocalPlaylist = currentVideo.type === 'local_playlist';
+        
+        let playerVars = { autoplay: autoPlay ? 1 : 0, start: startSeconds, enablejsapi: 1, playsinline: 1 };
+
+        if (!playerRef.current) {
+            if (ytContainerRef.current) {
+                const playerDiv = document.createElement('div');
+                ytContainerRef.current.appendChild(playerDiv);
+
+                playerRef.current = new window.YT.Player(playerDiv, {
+                    height: '100%', width: '100%',
+                    videoId: isLocalPlaylist ? currentVideo.videoIds[0] : (currentVideo.videoId || ''),
+                    playerVars: playerVars,
+                    events: {
+                        onReady: (e) => { 
+                            if (isPlaylist) {
+                                if (autoPlay) e.target.loadPlaylist({ list: currentVideo.listId, listType: 'playlist', index: startIndex, startSeconds: startSeconds });
+                                else e.target.cuePlaylist({ list: currentVideo.listId, listType: 'playlist', index: startIndex, startSeconds: startSeconds });
+                            } else if (isLocalPlaylist) {
+                                if (autoPlay) e.target.loadPlaylist({ playlist: currentVideo.videoIds, index: startIndex, startSeconds: startSeconds });
+                                else e.target.cuePlaylist({ playlist: currentVideo.videoIds, index: startIndex, startSeconds: startSeconds });
+                            } else {
+                                if (autoPlay) e.target.playVideo();
+                            }
+                        },
+                        onStateChange: (e) => {
+                            if (e.data === window.YT.PlayerState.PLAYING || e.data === window.YT.PlayerState.UNSTARTED || e.data === window.YT.PlayerState.CUED) {
+                                if (currentVideo.type.includes('playlist')) {
+                                    const queue = e.target.getPlaylist();
+                                    if (queue &amp;&amp; queue.length > 0) {
+                                        setPlaylistQueue(queue);
+                                        const idx = e.target.getPlaylistIndex();
+                                        if (idx !== null &amp;&amp; idx !== undefined &amp;&amp; idx !== -1) {
+                                            setCurrentPlaylistIndex(idx);
+                                        }
+                                        
+                                        setVideos(prev => {
+                                            let changed = false;
+                                            const updated = prev.map(v => {
+                                                if (v.id === currentVideo.id) {
+                                                    const expectedThumb = `https://img.youtube.com/vi/${queue[0]}/hqdefault.jpg`;
+                                                    if (v.thumbnail !== expectedThumb) {
+                                                        changed = true;
+                                                        return { ...v, thumbnail: expectedThumb };
+                                                    }
+                                                }
+                                                return v;
+                                            });
+                                            if (changed) {
+                                                const storable = updated.filter(v => v.provider !== 'local');
+                                                localStorage.setItem(lsKey('Videos'), JSON.stringify(storable));
+        try { window.parent.postMessage({ type: 'ytVideosChanged', videos: storable, chapterId: window._chapterId }, '*'); } catch(e) {}
+                                            }
+                                            return changed ? updated : prev;
+                                        });
+                                    }
+                                }
+                            }
+
+                            if (e.data === window.YT.PlayerState.PLAYING) {
+                                if (currentVideo.type.includes('playlist')) {
+                                    const currentIdx = e.target.getPlaylistIndex();
+                                    if (currentIdx !== null &amp;&amp; currentIdx !== undefined &amp;&amp; currentIdx !== -1) {
+                                        const indexes = JSON.parse(localStorage.getItem(lsKey('PlaylistIndexes')) || '{}');
+                                        if (indexes[currentVideo.id] !== currentIdx) {
+                                            indexes[currentVideo.id] = currentIdx;
+                                            localStorage.setItem(lsKey('PlaylistIndexes'), JSON.stringify(indexes));
+                                            
+                                            const times = JSON.parse(localStorage.getItem(lsKey('Times')) || '{}');
+                                            times[currentVideo.id] = 0;
+                                            localStorage.setItem(lsKey('Times'), JSON.stringify(times));
+                                        }
+                                    }
+                                } else {
+                                    const vData = e.target.getVideoData();
+                                    if (vData &amp;&amp; vData.title) {
+                                        setVideos(prev => {
+                                            let changed = false;
+                                            const updated = prev.map(v => {
+                                                if (v.id === currentVideo.id &amp;&amp; (v.title === 'YouTube Video' || v.title === 'Custom Video' || v.title === '')) {
+                                                    changed = true;
+                                                    return { ...v, title: vData.title };
+                                                }
+                                                return v;
+                                            });
+                                            if(changed) {
+                                                const storable = updated.filter(v => v.provider !== 'local');
+                                                localStorage.setItem(lsKey('Videos'), JSON.stringify(storable));
+        try { window.parent.postMessage({ type: 'ytVideosChanged', videos: storable, chapterId: window._chapterId }, '*'); } catch(e) {}
+                                            }
+                                            return changed ? updated : prev;
+                                        });
+                                    }
+                                }
+
+                                timeIntervalRef.current = setInterval(() => {
+                                    if (playerRef.current &amp;&amp; playerRef.current.getCurrentTime &amp;&amp; playerRef.current.getDuration) {
+                                        const time = Math.floor(playerRef.current.getCurrentTime());
+                                        const duration = Math.floor(playerRef.current.getDuration());
+                                        
+                                        const times = JSON.parse(localStorage.getItem(lsKey('Times')) || '{}');
+                                        const durations = JSON.parse(localStorage.getItem(lsKey('Durations')) || '{}');
+                                        
+                                        times[currentVideo.id] = time;
+                                        durations[currentVideo.id] = duration;
+                                        
+                                        localStorage.setItem(lsKey('Times'), JSON.stringify(times));
+                                        localStorage.setItem(lsKey('Durations'), JSON.stringify(durations));
+
+                                        setProgressData({ times, durations }); 
+                                    }
+                                }, 1000);
+                            } else {
+                                clearInterval(timeIntervalRef.current);
+                            }
+                        }
+                    }
+                });
+            }
+        } else {
+            if (isPlaylist) {
+                if (autoPlay) playerRef.current.loadPlaylist({ list: currentVideo.listId, listType: 'playlist', index: startIndex, startSeconds });
+                else playerRef.current.cuePlaylist({ list: currentVideo.listId, listType: 'playlist', index: startIndex, startSeconds });
+            } else if (isLocalPlaylist) {
+                if (autoPlay) playerRef.current.loadPlaylist({ playlist: currentVideo.videoIds, index: startIndex, startSeconds });
+                else playerRef.current.cuePlaylist({ playlist: currentVideo.videoIds, index: startIndex, startSeconds });
+            } else {
+                if (autoPlay) playerRef.current.loadVideoById({ videoId: currentVideo.videoId, startSeconds });
+                else playerRef.current.cueVideoById({ videoId: currentVideo.videoId, startSeconds });
+            }
+        }
+
+        return () => clearInterval(timeIntervalRef.current);
+      }, [currentVideo, ytReady, autoPlay]);
+
+      const activateMiniplayer = () => {
+        if (!playerRect) {
+            const w = 384;
+            const h = w * (9/16) + 40;
+            setPlayerRect({ left: window.innerWidth - w - 24, top: window.innerHeight - h - 24, width: w, height: h });
+        }
+        setIsMiniplayer(true);
+      };
+
+      const playVideo = (video) => {
+        if (video.provider === 'external') {
+            setCurrentVideo(video);
+            setIsTheaterMode(true);
+            setIsMiniplayer(false);
+            setAutoPlay(true);
+            
+            setTimeout(() => {
+                const container = document.getElementById('video-player-container');
+                if (!container) return;
+                
+                const rect = container.getBoundingClientRect();
+                
+                // জুম এবং স্কেলিং রেশিও ফিক্স
+                const zoomRatio = window.devicePixelRatio || 1;
+                
+                // ব্রাউজারের স্ক্রিন পজিশন
+                const screenX = window.screenX !== undefined ? window.screenX : window.screenLeft;
+                const screenY = window.screenY !== undefined ? window.screenY : window.screenTop;
+                
+                // Edge Vertical Tabs এর সাইজ ক্যালকুলেশন
+                const chromeWidth = window.outerWidth - window.innerWidth;
+                const chromeHeight = window.outerHeight - window.innerHeight;
+                
+                // Edge এ Vertical Tabs অন থাকলে বামদিকে জায়গা নেয়
+                const leftChromeOffset = chromeWidth > 40 ? chromeWidth - 10 : 8; 
+                const topChromeOffset = chromeHeight > 40 ? chromeHeight - 10 : 85;
+                
+                // পপ-আপের এক্স্যাক্ট পজিশন (জুমের সাথে মাল্টিপ্লাই করে ফিজিক্যাল পিক্সেলে নেয়া হলো)
+                const left = Math.round(screenX + leftChromeOffset + (rect.left * zoomRatio));
+                const top = Math.round(screenY + topChromeOffset + (rect.top * zoomRatio));
+                
+                // পপ-আপ উইন্ডোর সাইজ ফিক্স (আপনার স্ক্রিনশট অনুযায়ী হাইট আরও একটু কমানো হলো)
+                const popupWidth = Math.round((rect.width * zoomRatio) - 16); 
+                const popupHeight = Math.round((rect.height * zoomRatio) - 70); 
+                
+                const features = `menubar=no,toolbar=no,location=no,status=no,scrollbars=no,resizable=yes,width=${popupWidth},height=${popupHeight},left=${left},top=${top}`;
+                
+                const popup = window.open(video.externalUrl, 'ExternalVideoPopup', features);
+                if (popup) {
+                    popup.focus();
+                    popupWindowRef.current = popup; // রেফারেন্স সেভ করে রাখা হলো
+                }
+            }, 300); 
+            
+            const updatedHistory = [video, ...watchHistory.filter(v => v.id !== video.id)].slice(0, 20);
+            setWatchHistory(updatedHistory);
+            const storableHistory = updatedHistory.filter(v => v.provider !== 'local');
+            localStorage.setItem(lsKey('History'), JSON.stringify(storableHistory));
+            return;
+        }
+
+        if (currentVideo &amp;&amp; currentVideo.id === video.id) {
+            setIsMiniplayer(false);
+            setAutoPlay(true);
+            if (video.provider !== 'local' &amp;&amp; playerRef.current &amp;&amp; typeof playerRef.current.playVideo === 'function') {
+                playerRef.current.playVideo();
+            }
+            if (video.provider === 'local' &amp;&amp; localVideoRef.current) {
+                localVideoRef.current.play();
+            }
+            return;
+        }
+
+        setAutoPlay(true); 
+        setCurrentVideo(video);
+        setIsMiniplayer(false); 
+        
+        if (video.provider === 'local' &amp;&amp; video.type === 'local_playlist') {
+            const savedIndexes = JSON.parse(localStorage.getItem(lsKey('PlaylistIndexes')) || '{}');
+            const startIndex = savedIndexes[video.id] || 0;
+            
+            setPlaylistQueue(video.videoObjects.map(v => v.id));
+            setCurrentPlaylistIndex(startIndex);
+            setIsCurrentPlaylistExpanded(true);
+        } else if (video.provider !== 'local') {
+            setPlaylistQueue([]); 
+            setCurrentPlaylistIndex(0);
+            setIsCurrentPlaylistExpanded(true); 
+        }
+
+        const updatedHistory = [video, ...watchHistory.filter(v => v.id !== video.id)].slice(0, 20);
+        setWatchHistory(updatedHistory);
+        
+        const storableHistory = updatedHistory.filter(v => v.provider !== 'local');
+        localStorage.setItem(lsKey('History'), JSON.stringify(storableHistory));
+        
+        if (video.provider !== 'local') {
+            setLastWatched(video);
+            localStorage.setItem(lsKey('LastWatched'), JSON.stringify(video));
+        }
+      };
+
+      const deleteMedia = (e, id) => {
+        e.stopPropagation();
+        setConfirmState({ isOpen: true, message: 'আপনি কি নিশ্চিত যে এই আইটেমটি ডিলিট করতে চান?', targetId: id });
+      };
+
+      const executeDelete = () => {
+        const updatedVideos = videos.filter(v => v.id !== confirmState.targetId);
+        setVideos(updatedVideos);
+        
+        const storable = updatedVideos.filter(v => v.provider !== 'local');
+        localStorage.setItem(lsKey('Videos'), JSON.stringify(storable));
+        try { window.parent.postMessage({ type: 'ytVideosChanged', videos: storable, chapterId: window._chapterId }, '*'); } catch(e) {}
+        
+        if(currentVideo?.id === confirmState.targetId) {
+            setCurrentVideo(null);
+            setIsMiniplayer(false);
+        }
+        setConfirmState({ isOpen: false, message: '', targetId: null });
+      };
+
+      const handleAddSubmit = (e) => {
+        e.preventDefault();
+        const { videoId, listId, driveId, externalUrl, title: extractedTitle } = parseMediaInput(newMediaInput.link);
+        
+        if (!videoId &amp;&amp; !listId &amp;&amp; !driveId &amp;&amp; !externalUrl) {
+            setAlertState({ isOpen: true, message: 'দয়া করে একটি সঠিক ইউটিউব, গুগল ড্রাইভ বা গুগল ফটোজ লিংক দিন।' });
+            return;
+        }
+
+        const id = externalUrl ? 'ext-' + Date.now() : (driveId ? driveId : (listId ? listId : videoId));
+        const type = listId ? 'playlist' : 'video';
+        const provider = externalUrl ? 'external' : (driveId ? 'gdrive' : 'youtube');
+        
+        let finalTitle = newMediaInput.title || extractedTitle;
+        if (!finalTitle) finalTitle = externalUrl ? 'Google Photos Video' : (driveId ? 'Google Drive Video' : (type === 'playlist' ? 'YouTube Playlist' : 'YouTube Video'));
+
+        let thumbnail = 'https://placehold.co/640x360/222222/FFFFFF/png?text=Media';
+        if (externalUrl) thumbnail = 'https://placehold.co/640x360/DB4437/FFFFFF/png?text=Google+Photos';
+        else if (driveId) thumbnail = 'https://placehold.co/640x360/1a73e8/FFFFFF/png?text=Google+Drive';
+        else if (videoId) thumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        else if (listId) thumbnail = 'https://placehold.co/640x360/222222/FFFFFF/png?text=YouTube+Playlist';
+
+        const newMedia = {
+            id: id, videoId, listId, driveId, externalUrl, type, provider, title: finalTitle,
+            channel: newMediaInput.channel || 'Added by User', views: externalUrl ? 'External Link' : '0 views', thumbnail,
+            channelAvatar: `https://ui-avatars.com/api/?name=${newMediaInput.channel || 'User'}&amp;background=random`,
+        };
+
+        const updatedVideos = [newMedia, ...videos];
+        setVideos(updatedVideos);
+        
+        const storable = updatedVideos.filter(v => v.provider !== 'local');
+        localStorage.setItem(lsKey('Videos'), JSON.stringify(storable));
+        try { window.parent.postMessage({ type: 'ytVideosChanged', videos: storable, chapterId: window._chapterId }, '*'); } catch(e) {}
+        
+        setIsAddModalOpen(false);
+        setNewMediaInput({ link: '', title: '', channel: '' });
+      };
+
+      const handleCreatePlaylist = (e) => {
+        e.preventDefault();
+        if(selectedVideoIds.length === 0) {
+            setAlertState({ isOpen: true, message: 'অন্তত একটি ভিডিও নির্বাচন করুন।' });
+            return;
+        }
+        
+        const firstVid = videos.find(v => v.videoId === selectedVideoIds[0]);
+        const newPlaylist = {
+            id: 'local-list-' + Date.now(), type: 'local_playlist', provider: 'youtube', title: newListTitle || 'My Playlist',
+            videoIds: selectedVideoIds, thumbnail: firstVid ? firstVid.thumbnail : 'https://placehold.co/640x360/222222/FFFFFF/png?text=Playlist',
+            channel: 'Created by You', channelAvatar: 'https://ui-avatars.com/api/?name=User&amp;background=random',
+            views: selectedVideoIds.length + ' videos'
+        };
+        
+        const updated = [newPlaylist, ...videos];
+        setVideos(updated);
+        
+        const storable = updated.filter(v => v.provider !== 'local');
+        localStorage.setItem(lsKey('Videos'), JSON.stringify(storable));
+        try { window.parent.postMessage({ type: 'ytVideosChanged', videos: storable, chapterId: window._chapterId }, '*'); } catch(e) {}
+        
+        setIsCreateListModalOpen(false);
+        setNewListTitle('');
+        setSelectedVideoIds([]);
+      };
+
+      const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(searchQuery.toLowerCase()) || video.channel.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      let displayTitle = currentVideoData?.title || '';
+      let displayChannel = currentVideoData?.channel || '';
+      let displayAvatar = currentVideoData?.channelAvatar || '';
+
+      if (currentVideoData?.type?.includes('playlist') &amp;&amp; playlistQueue.length > 0) {
+          const activeVidId = playlistQueue[currentPlaylistIndex];
+          
+          if (currentVideoData.provider === 'local') {
+              const activeLocalVid = currentVideoData.videoObjects?.[currentPlaylistIndex];
+              if (activeLocalVid) {
+                  displayTitle = activeLocalVid.title;
+                  displayChannel = activeLocalVid.channel;
+                  displayAvatar = activeLocalVid.thumbnail;
+              }
+          } else if (activeVidId) {
+              const localVidInfo = videos.find(v => v.videoId === activeVidId);
+              const meta = fetchedMeta[activeVidId];
+
+              if (localVidInfo) {
+                  displayTitle = localVidInfo.title;
+                  displayChannel = localVidInfo.channel;
+                  displayAvatar = localVidInfo.channelAvatar;
+              } else if (meta &amp;&amp; meta.title) {
+                  displayTitle = meta.title;
+                  displayChannel = meta.channel;
+              } else if (meta &amp;&amp; meta.loading) {
+                  displayTitle = 'লোড হচ্ছে...';
+              } else {
+                  displayTitle = `ভিডিও ${currentPlaylistIndex + 1}`;
+              }
+          }
+      }
+
+      const handleDragStart = (e) => {
+        if (e.target.closest('button') || e.target.tagName.toLowerCase() === 'input') return;
+        setIsDragging(true);
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        setDragOffset({ x: clientX - playerRect.left, y: clientY - playerRect.top });
+      };
+
+      const handleResizeStart = (e, dir) => {
+        e.stopPropagation(); e.preventDefault();
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        setResizeState({ active: true, dir, startX: clientX, startY: clientY, startLeft: playerRect.left, startTop: playerRect.top, startWidth: playerRect.width, startHeight: playerRect.height });
+      };
+
+      useEffect(() => {
+        const handleMove = (e) => {
+          const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+          const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+          
+          if (isDragging &amp;&amp; playerRect) {
+            setPlayerRect(prev => ({ ...prev, left: clientX - dragOffset.x, top: clientY - dragOffset.y }));
+          } else if (resizeState.active) {
+            const dx = clientX - resizeState.startX, dy = clientY - resizeState.startY;
+            let { startLeft, startTop, startWidth, startHeight, dir } = resizeState;
+            let newWidth = startWidth, newLeft = startLeft, newTop = startTop;
+
+            if (dir.includes('e')) newWidth = startWidth + dx;
+            else if (dir.includes('w')) { newWidth = startWidth - dx; newLeft = startLeft + dx; } 
+            
+            if (dir.includes('n')) {
+                const videoH = (startHeight - dy) - 40;
+                newWidth = videoH * (16/9);
+                newTop = startTop + dy;
+                newLeft = startLeft + (startWidth - newWidth) / 2;
+            } else if (dir.includes('s')) {
+                const videoH = (startHeight + dy) - 40;
+                newWidth = videoH * (16/9);
+                newLeft = startLeft + (startWidth - newWidth) / 2;
+            }
+
+            if (newWidth < 250) { newWidth = 250; if (dir.includes('w')) newLeft -= (250 - newWidth); }
+            if (newWidth > 800) { newWidth = 800; if (dir.includes('w')) newLeft += (newWidth - 800); }
+
+            const newHeight = newWidth * (9/16) + 40;
+            if (dir.includes('n')) newTop = startTop + (startHeight - newHeight);
+            setPlayerRect({ left: newLeft, top: newTop, width: newWidth, height: newHeight });
+          }
+        };
+
+        const handleUp = () => { setIsDragging(false); setResizeState(prev => ({ ...prev, active: false })); };
+
+        if (isDragging || resizeState.active) {
+          window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleUp);
+          window.addEventListener('touchmove', handleMove, { passive: false }); window.addEventListener('touchend', handleUp);
+        }
+        return () => {
+          window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleUp);
+          window.removeEventListener('touchmove', handleMove); window.removeEventListener('touchend', handleUp);
+        };
+      }, [isDragging, resizeState, dragOffset, playerRect]);
+
+      let gridClass = &quot;grid gap-x-4 gap-y-8 &quot;;
+      if (gridCols === 1) gridClass += &quot;grid-cols-1&quot;;
+      else if (gridCols === 2) gridClass += &quot;grid-cols-1 sm:grid-cols-2&quot;;
+      else if (gridCols === 3) gridClass += &quot;grid-cols-1 sm:grid-cols-2 lg:grid-cols-3&quot;;
+      else if (gridCols === 4) gridClass += &quot;grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4&quot;;
+      else if (gridCols === 5) gridClass += &quot;grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5&quot;;
+      else gridClass += &quot;grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6&quot;;
+
+      return (
+        <div className=&quot;min-h-screen flex flex-col relative overflow-hidden bg-[#0f0f0f]&quot;>
+          <header className=&quot;flex items-center justify-between px-4 py-2 sticky top-0 bg-[#0f0f0f] z-40 h-16 border-b border-white/10&quot;>
+            <div className=&quot;flex items-center gap-4&quot;>
+              <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className=&quot;p-2 hover:bg-white/10 rounded-full transition-colors&quot;>
+                <i className=&quot;fas fa-bars text-xl&quot;></i>
+              </button>
+              <div className=&quot;flex items-center gap-2 cursor-pointer&quot; onClick={() => { setCurrentVideo(null); setIsMiniplayer(false); }}>
+                <i className=&quot;fab fa-youtube text-red-600 text-3xl&quot;></i>
+                <span className=&quot;text-xl font-bold tracking-tighter hidden sm:block&quot;>YouTube</span>
+              </div>
+            </div>
+
+            <div className=&quot;flex-1 max-w-xl flex items-center ml-4 mr-4&quot;>
+              <div className=&quot;flex w-full bg-[#121212] border border-white/20 rounded-full overflow-hidden focus-within:border-blue-500&quot;>
+                <input 
+                  type=&quot;text&quot; 
+                  placeholder=&quot;অনুসন্ধান করুন...&quot; 
+                  className=&quot;w-full bg-transparent px-4 py-2 outline-none text-white placeholder-gray-400&quot;
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button className=&quot;px-5 bg-white/10 hover:bg-white/20 transition-colors border-l border-white/20&quot;>
+                  <i className=&quot;fas fa-search text-gray-300&quot;></i>
+                </button>
+              </div>
+            </div>
+
+            <div className=&quot;flex items-center gap-2 sm:gap-3&quot;>
+              {(!currentVideo || isMiniplayer) &amp;&amp; (
+                <div className=&quot;hidden md:flex items-center gap-2 bg-[#212121] px-2 py-1 rounded-full border border-gray-700 mr-1&quot;>
+                  <button onClick={() => setGridCols(Math.max(1, gridCols - 1))} className=&quot;text-gray-300 hover:text-white hover:bg-white/10 w-6 h-6 rounded flex items-center justify-center transition&quot; title=&quot;ভিডিও বড় করুন&quot;>
+                      <i className=&quot;fas fa-plus text-[10px]&quot;></i>
+                  </button>
+                  <div className=&quot;w-px h-3 bg-gray-600&quot;></div>
+                  <button onClick={() => setGridCols(Math.min(6, gridCols + 1))} className=&quot;text-gray-300 hover:text-white hover:bg-white/10 w-6 h-6 rounded flex items-center justify-center transition&quot; title=&quot;ভিডিও ছোট করুন&quot;>
+                      <i className=&quot;fas fa-minus text-[10px]&quot;></i>
+                  </button>
+                </div>
+              )}
+              
+              <button onClick={() => setIsLocalModalOpen(true)} className=&quot;flex items-center gap-2 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 rounded-full transition-colors border border-emerald-500/30&quot;>
+                <i className=&quot;fas fa-folder-open text-sm&quot;></i><span className=&quot;text-sm font-semibold hidden md:block&quot;>লোকাল ফাইল</span>
+              </button>
+
+              <button onClick={() => setIsCreateListModalOpen(true)} className=&quot;flex items-center gap-2 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-full transition-colors border border-blue-500/30 hidden lg:flex&quot;>
+                <i className=&quot;fas fa-folder-plus text-sm&quot;></i><span className=&quot;text-sm font-semibold&quot;>প্লেলিস্ট বানান</span>
+              </button>
+              
+              <button onClick={() => setIsAddModalOpen(true)} className=&quot;flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20&quot;>
+                <i className=&quot;fas fa-globe text-sm&quot;></i><span className=&quot;text-sm font-semibold hidden md:block&quot;>অনলাইন ভিডিও</span>
+              </button>
+            </div>
+          </header>
+
+          <div className=&quot;flex flex-1 overflow-hidden&quot;>
+            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} flex-shrink-0 hidden md:flex flex-col bg-[#0f0f0f] transition-all duration-300 overflow-y-auto px-2 py-3 border-r border-white/10 custom-scrollbar`}>
+              
+              <div onClick={() => { setCurrentVideo(null); setIsMiniplayer(false); }} className={`flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center flex-col'} py-2.5 my-1 rounded-xl cursor-pointer transition-colors ${!currentVideo ? 'bg-white/10 font-bold' : 'hover:bg-white/10'}`}>
+                <div className={`flex items-center justify-center ${isSidebarOpen ? 'mr-4' : 'mb-1'} ${!currentVideo ? 'text-white' : 'text-gray-200'}`}><i className=&quot;fas fa-home text-xl&quot;></i></div>
+                <span className={`${isSidebarOpen ? 'text-sm' : 'text-[10px]'} ${!currentVideo ? 'text-white font-semibold' : 'text-gray-200'}`}>হোম</span>
+              </div>
+              
+              <SidebarToggle icon={<i className=&quot;fas fa-video text-xl&quot;></i>} label=&quot;সকল ভিডিও&quot; isExpanded={isAllVideosExpanded} onToggle={() => setIsAllVideosExpanded(!isAllVideosExpanded)} isOpen={isSidebarOpen} scrollable={true}>
+                  {videos.filter(v => v.type === 'video').length === 0 &amp;&amp; <p className=&quot;text-xs text-gray-500 pl-1&quot;>কোনো ভিডিও নেই</p>}
+                  {videos.filter(v => v.type === 'video').map((video, idx) => {
+                      const watchedSec = progressData.times[video.id] || 0;
+                      const totalSec = progressData.durations[video.id] || 0;
+                      const progressPercent = totalSec > 0 ? Math.min((watchedSec / totalSec) * 100, 100) : 0;
+                      return (
+                        <div key={idx} className=&quot;flex gap-2 cursor-pointer hover:bg-white/10 p-1.5 rounded-lg transition-colors group&quot; onClick={() => playVideo(video)}>
+                          <div className=&quot;w-16 h-10 relative flex-shrink-0 bg-black rounded overflow-hidden border border-white/10&quot;>
+                            <img src={video.thumbnail} className=&quot;w-full h-full object-cover&quot; />
+                            {progressPercent > 0 &amp;&amp; (
+                                <div className=&quot;absolute bottom-0 left-0 right-0 h-0.5 bg-gray-600/80&quot;>
+                                  <div className=&quot;h-full bg-red-600&quot; style={{ width: `${progressPercent}%` }}></div>
+                                </div>
+                            )}
+                          </div>
+                          <div className=&quot;flex flex-col justify-center overflow-hidden flex-1&quot;>
+                            <span className=&quot;text-[11px] font-semibold text-white line-clamp-1 group-hover:text-blue-400&quot;>{video.title}</span>
+                            <span className=&quot;text-[9px] text-gray-400 truncate&quot;>{video.channel}</span>
+                          </div>
+                        </div>
+                      )
+                  })}
+              </SidebarToggle>
+
+              <SidebarToggle icon={<i className=&quot;fas fa-layer-group text-xl&quot;></i>} label=&quot;সকল প্লেলিস্ট&quot; isExpanded={isAllPlaylistsExpanded} onToggle={() => setIsAllPlaylistsExpanded(!isAllPlaylistsExpanded)} isOpen={isSidebarOpen} scrollable={true}>
+                  {videos.filter(v => v.type.includes('playlist')).length === 0 &amp;&amp; <p className=&quot;text-xs text-gray-500 pl-1&quot;>কোনো প্লেলিস্ট নেই</p>}
+                  {videos.filter(v => v.type.includes('playlist')).map((video, idx) => {
+                      return (
+                        <div key={idx} className=&quot;flex gap-2 cursor-pointer hover:bg-white/10 p-1.5 rounded-lg transition-colors group&quot; onClick={() => playVideo(video)}>
+                          <div className=&quot;w-16 h-10 relative flex-shrink-0 bg-black rounded overflow-hidden border border-white/10&quot;>
+                            <img src={video.thumbnail} className=&quot;w-full h-full object-cover&quot; />
+                            <div className=&quot;absolute bottom-0.5 right-0.5 bg-black/80 text-[8px] px-1 rounded flex items-center gap-0.5&quot;><i className=&quot;fas fa-list&quot;></i></div>
+                          </div>
+                          <div className=&quot;flex flex-col justify-center overflow-hidden flex-1&quot;>
+                            <span className=&quot;text-[11px] font-semibold text-white line-clamp-1 group-hover:text-blue-400&quot;>{video.title}</span>
+                            <span className=&quot;text-[9px] text-gray-400 truncate&quot;>{video.channel}</span>
+                          </div>
+                        </div>
+                      )
+                  })}
+              </SidebarToggle>
+
+              {currentVideoData?.type?.includes('playlist') &amp;&amp; playlistQueue.length > 0 &amp;&amp; (
+                  <>
+                  <hr className=&quot;border-white/10 my-2&quot; />
+                  <SidebarToggle icon={<i className=&quot;fas fa-play-circle text-xl text-blue-400&quot;></i>} label=&quot;বর্তমান প্লেলিস্ট&quot; isExpanded={isCurrentPlaylistExpanded} onToggle={() => setIsCurrentPlaylistExpanded(!isCurrentPlaylistExpanded)} isOpen={isSidebarOpen} scrollable={true}>
+                      {playlistQueue.map((vidId, index) => {
+                          const isPlaying = index === currentPlaylistIndex;
+                          let title = `ভিডিও ${index + 1}`;
+                          let channel = 'YouTube';
+                          let thumbnail = `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`;
+                          
+                          let progressPercent = 0;
+
+                          if (currentVideoData.provider === 'local') {
+                              const localVidInfo = currentVideoData.videoObjects?.[index];
+                              if (localVidInfo) {
+                                  title = localVidInfo.title;
+                                  channel = localVidInfo.channel;
+                                  thumbnail = localVidInfo.thumbnail;
+                                  const watchedSec = progressData.times[localVidInfo.id] || 0;
+                                  const totalSec = progressData.durations[localVidInfo.id] || 0;
+                                  progressPercent = totalSec > 0 ? Math.min((watchedSec / totalSec) * 100, 100) : 0;
+                              }
+                          } else {
+                              const localVidInfo = videos.find(v => v.videoId === vidId);
+                              const meta = fetchedMeta[vidId];
+                              if (localVidInfo) {
+                                  title = localVidInfo.title;
+                                  channel = localVidInfo.channel;
+                                  const watchedSec = progressData.times[localVidInfo.id] || 0;
+                                  const totalSec = progressData.durations[localVidInfo.id] || 0;
+                                  progressPercent = totalSec > 0 ? Math.min((watchedSec / totalSec) * 100, 100) : 0;
+                              } else if (meta &amp;&amp; meta.title) {
+                                  title = meta.title;
+                                  channel = meta.channel;
+                              } else if (meta &amp;&amp; meta.loading) {
+                                  title = 'লোড হচ্ছে...';
+                              }
+                          }
+
+                          return (
+                              <div 
+                                  key={index} 
+                                  onClick={() => {
+                                      if (currentVideoData.provider === 'local') {
+                                          setCurrentPlaylistIndex(index);
+                                          const indexes = JSON.parse(localStorage.getItem(lsKey('PlaylistIndexes')) || '{}');
+                                          indexes[currentVideoData.id] = index;
+                                          localStorage.setItem(lsKey('PlaylistIndexes'), JSON.stringify(indexes));
+                                      } else {
+                                          playerRef.current?.playVideoAt(index);
+                                      }
+                                  }}
+                                  className={`flex gap-2 cursor-pointer hover:bg-white/10 p-1.5 rounded-lg transition-colors group ${isPlaying ? 'bg-white/20 border border-white/10' : ''}`}
+                              >
+                                  <div className=&quot;text-[10px] text-gray-400 w-3 flex items-center justify-center&quot;>
+                                      {isPlaying ? <i className=&quot;fas fa-play text-white&quot;></i> : index + 1}
+                                  </div>
+                                  <div className=&quot;w-16 h-10 relative flex-shrink-0 bg-black rounded overflow-hidden border border-white/10&quot;>
+                                      <img src={thumbnail} className=&quot;w-full h-full object-cover&quot; />
+                                      {progressPercent > 0 &amp;&amp; (
+                                          <div className=&quot;absolute bottom-0 left-0 right-0 h-0.5 bg-gray-600/80&quot;>
+                                              <div className=&quot;h-full bg-red-600&quot; style={{ width: `${progressPercent}%` }}></div>
+                                          </div>
+                                      )}
+                                  </div>
+                                  <div className=&quot;flex flex-col justify-center overflow-hidden flex-1&quot;>
+                                      <span className={`text-[11px] font-semibold line-clamp-1 group-hover:text-blue-400 ${isPlaying ? 'text-white' : 'text-gray-300'}`}>{title}</span>
+                                      <span className=&quot;text-[9px] text-gray-400 truncate&quot;>{channel}</span>
+                                  </div>
+                              </div>
+                          )
+                      })}
+                  </SidebarToggle>
+                  </>
+              )}
+
+              {isSidebarOpen &amp;&amp; <hr className=&quot;border-white/10 my-2&quot; />}
+              
+              <SidebarToggle icon={<i className=&quot;fas fa-history text-xl&quot;></i>} label=&quot;ইতিহাস&quot; isExpanded={isHistoryExpanded} onToggle={() => setIsHistoryExpanded(!isHistoryExpanded)} isOpen={isSidebarOpen} scrollable={true}>
+                  {watchHistory.length === 0 ? (
+                    <p className=&quot;text-xs text-gray-500 pl-1&quot;>কোনো ইতিহাস নেই</p>
+                  ) : (
+                    watchHistory.map((video, idx) => {
+                      const watchedSec = progressData.times[video.id] || 0;
+                      const totalSec = progressData.durations[video.id] || 0;
+                      const progressPercent = totalSec > 0 ? Math.min((watchedSec / totalSec) * 100, 100) : 0;
+                      return (
+                        <div key={idx} className=&quot;flex gap-2 cursor-pointer hover:bg-white/10 p-1.5 rounded-lg transition-colors group&quot; onClick={() => playVideo(video)}>
+                          <div className=&quot;w-16 h-10 relative flex-shrink-0 bg-black rounded overflow-hidden border border-white/10&quot;>
+                            <img src={video.thumbnail} className=&quot;w-full h-full object-cover&quot; />
+                            {progressPercent > 0 &amp;&amp; (
+                                <div className=&quot;absolute bottom-0 left-0 right-0 h-0.5 bg-gray-600/80&quot;>
+                                  <div className=&quot;h-full bg-red-600&quot; style={{ width: `${progressPercent}%` }}></div>
+                                </div>
+                            )}
+                          </div>
+                          <div className=&quot;flex flex-col justify-center overflow-hidden flex-1&quot;>
+                            <span className=&quot;text-[11px] font-semibold text-white line-clamp-1 group-hover:text-blue-400&quot;>{video.title}</span>
+                            <span className=&quot;text-[9px] text-gray-400 truncate&quot;>{video.channel}</span>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+              </SidebarToggle>
+
+            </aside>
+
+            <main className=&quot;flex-1 overflow-y-auto bg-[#0f0f0f] relative custom-scrollbar&quot;>
+              
+              <div className={`${isTheaterMode &amp;&amp; !isMiniplayer ? 'w-full max-w-full h-[calc(100vh-64px)] p-4 flex-col' : 'max-w-[1600px] mx-auto p-4 flex-col lg:flex-row'} gap-6 ${(currentVideo &amp;&amp; !isMiniplayer) ? 'flex' : 'absolute w-0 h-0 overflow-hidden invisible'}`}>
+                <div className={`flex flex-col relative ${isTheaterMode &amp;&amp; !isMiniplayer ? 'w-full h-full' : 'flex-1 lg:w-2/3'}`}>
+                  {currentVideo &amp;&amp; (
+                    <div 
+                      className={`${isMiniplayer ? 'fixed z-[100] flex flex-col overflow-visible visible' : (isTheaterMode ? 'w-full h-full relative' : 'w-full aspect-video relative')}`}
+                      style={isMiniplayer &amp;&amp; playerRect ? { left: `${playerRect.left}px`, top: `${playerRect.top}px`, width: `${playerRect.width}px`, height: `${playerRect.height}px` } : {}}
+                    >
+                      <div id=&quot;video-player-container&quot; className={`w-full h-full flex flex-col relative rounded-xl overflow-hidden group ${isMiniplayer ? 'bg-[#212121] shadow-2xl border border-gray-700' : 'bg-black shadow-lg'}`}>
+                        <div className={`${isMiniplayer ? 'flex' : 'hidden'} h-10 flex-shrink-0 justify-between items-center px-3 bg-[#181818] cursor-move select-none z-10 border-b border-gray-700`} onMouseDown={handleDragStart} onTouchStart={handleDragStart}>
+                          <div className=&quot;flex flex-col truncate pr-2 w-[75%]&quot;>
+                            <span className=&quot;text-sm font-bold truncate text-white&quot;>
+                                {currentVideoData?.provider === 'gdrive' &amp;&amp; <i className=&quot;fab fa-google-drive mr-2 text-blue-400&quot;></i>}
+                                {currentVideoData?.provider === 'local' &amp;&amp; <i className=&quot;fas fa-hdd mr-2 text-emerald-400&quot;></i>}
+                                {currentVideoData?.provider === 'external' &amp;&amp; <i className=&quot;fas fa-external-link-alt mr-2 text-red-500&quot;></i>}
+                                {currentVideoData?.type?.includes('playlist') &amp;&amp; <i className=&quot;fas fa-play mr-2 text-gray-400 text-[10px]&quot;></i>}
+                                {displayTitle}
+                            </span>
+                          </div>
+                          <div className=&quot;flex gap-4 text-gray-400 items-center&quot;>
+                            <button onClick={() => setIsMiniplayer(false)} className=&quot;hover:text-white&quot; title=&quot;Expand&quot;><i className=&quot;fas fa-expand-alt&quot;></i></button>
+                            <button onClick={() => { setCurrentVideo(null); setIsMiniplayer(false); }} className=&quot;hover:text-white&quot; title=&quot;Close&quot;><i className=&quot;fas fa-times text-lg&quot;></i></button>
+                          </div>
+                        </div>
+
+                        <div className=&quot;w-full flex-1 relative bg-black pointer-events-auto overflow-hidden&quot;>
+                          {(isDragging || resizeState.active) &amp;&amp; <div className=&quot;absolute inset-0 z-10 bg-transparent&quot;></div>}
+                          
+                          <div 
+                              ref={ytContainerRef} 
+                              className={`w-full h-full absolute inset-0 ${(!currentVideoData?.provider || currentVideoData?.provider === 'youtube') ? 'block' : 'hidden'}`}
+                          ></div>
+
+                          {currentVideoData?.provider === 'gdrive' &amp;&amp; (
+                              <iframe 
+                                  src={`https://drive.google.com/file/d/${currentVideoData.driveId}/preview`} 
+                                  className=&quot;w-full h-full border-0 absolute inset-0 z-0&quot; 
+                                  allow=&quot;autoplay; fullscreen&quot;
+                                  allowFullScreen
+                              ></iframe>
+                          )}
+
+                          {currentVideoData?.provider === 'local' &amp;&amp; (
+                              <video 
+                                  ref={localVideoRef}
+                                  src={currentVideoData.type === 'local_playlist' ? currentVideoData.videoObjects[currentPlaylistIndex]?.blobUrl : currentVideoData.blobUrl} 
+                                  className=&quot;w-full h-full object-contain absolute inset-0 z-0 outline-none&quot; 
+                                  controls
+                                  autoPlay
+                                  onLoadedMetadata={(e) => {
+                                      const vidId = currentVideoData.type === 'local_playlist' ? currentVideoData.videoObjects[currentPlaylistIndex].id : currentVideoData.id;
+                                      const times = JSON.parse(localStorage.getItem(lsKey('Times')) || '{}');
+                                      if (times[vidId] &amp;&amp; times[vidId] > 0) {
+                                          e.target.currentTime = times[vidId];
+                                      }
+                                  }}
+                                  onEnded={() => {
+                                      if (currentVideoData.type === 'local_playlist' &amp;&amp; currentPlaylistIndex < currentVideoData.videoObjects.length - 1) {
+                                          const nextIdx = currentPlaylistIndex + 1;
+                                          setCurrentPlaylistIndex(nextIdx);
+                                          
+                                          const indexes = JSON.parse(localStorage.getItem(lsKey('PlaylistIndexes')) || '{}');
+                                          indexes[currentVideoData.id] = nextIdx;
+                                          localStorage.setItem(lsKey('PlaylistIndexes'), JSON.stringify(indexes));
+                                      }
+                                  }}
+                                  onTimeUpdate={(e) => {
+                                      const time = Math.floor(e.target.currentTime);
+                                      const duration = Math.floor(e.target.duration);
+                                      const vidId = currentVideoData.type === 'local_playlist' ? currentVideoData.videoObjects[currentPlaylistIndex].id : currentVideoData.id;
+                                      
+                                      setProgressData(prev => ({
+                                          times: { ...prev.times, [vidId]: time },
+                                          durations: { ...prev.durations, [vidId]: duration }
+                                      }));
+
+                                      const storedTimes = JSON.parse(localStorage.getItem(lsKey('Times')) || '{}');
+                                      const storedDurations = JSON.parse(localStorage.getItem(lsKey('Durations')) || '{}');
+                                      storedTimes[vidId] = time;
+                                      storedDurations[vidId] = duration;
+                                      localStorage.setItem(lsKey('Times'), JSON.stringify(storedTimes));
+                                      localStorage.setItem(lsKey('Durations'), JSON.stringify(storedDurations));
+                                  }}
+                              ></video>
+                          )}
+
+                          {currentVideoData?.provider === 'external' &amp;&amp; (
+                              <div className=&quot;absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#121212] text-white&quot;>
+                                  <i className=&quot;fas fa-external-link-alt text-4xl text-red-500 mb-4&quot;></i>
+                                  <h2 className=&quot;text-xl font-bold mb-2&quot;>গুগল ফটোজের ভিডিওটি পপ-আপ উইন্ডোতে চলছে</h2>
+                                  <p className=&quot;text-gray-400 text-sm mb-6 text-center px-4&quot;>ব্রাউজারের সিকিউরিটি রুলসের কারণে এটি নতুন উইন্ডোতে ওপেন হয়েছে।</p>
+                                  <div className=&quot;flex gap-4&quot;>
+                                      <button 
+                                          onClick={() => {
+                                              // উইন্ডোটি রানিং থাকলে সামনে আনবে, কেটে দিলে আবার ওপেন করবে
+                                              if (popupWindowRef.current &amp;&amp; !popupWindowRef.current.closed) {
+                                                  popupWindowRef.current.focus();
+                                              } else {
+                                                  playVideo(currentVideoData);
+                                              }
+                                          }} 
+                                          className=&quot;bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-full font-bold transition flex items-center&quot;
+                                      >
+                                          <i className=&quot;fas fa-window-restore mr-2&quot;></i> সামনে আনুন
+                                      </button>
+                                      <button 
+                                          onClick={() => playVideo(currentVideoData)} 
+                                          className=&quot;bg-red-600 hover:bg-red-500 text-white px-6 py-2.5 rounded-full font-bold transition flex items-center&quot;
+                                      >
+                                          <i className=&quot;fas fa-redo mr-2&quot;></i> আবার খুলুন
+                                      </button>
+                                  </div>
+                              </div>
+                          )}
+                        </div>
+
+                        {isTheaterMode &amp;&amp; !isMiniplayer &amp;&amp; (
+                            <button onClick={() => setIsTheaterMode(false)} className=&quot;absolute bottom-[70px] right-6 z-50 bg-black/80 hover:bg-black text-white px-5 py-2.5 rounded-md flex items-center gap-2 transition-all backdrop-blur-sm border border-white/20 opacity-0 group-hover:opacity-100 shadow-xl font-medium text-sm&quot;>
+                                <i className=&quot;fas fa-compress&quot;></i> সাধারণ ভিউ
+                            </button>
+                        )}
+                      </div>
+
+                      {isMiniplayer &amp;&amp; (
+                        <>
+                          <div className=&quot;absolute -top-2 left-2 right-2 h-4 cursor-n-resize z-20&quot; onMouseDown={(e) => handleResizeStart(e, 'n')} onTouchStart={(e) => handleResizeStart(e, 'n')} />
+                          <div className=&quot;absolute -bottom-2 left-2 right-2 h-4 cursor-s-resize z-20&quot; onMouseDown={(e) => handleResizeStart(e, 's')} onTouchStart={(e) => handleResizeStart(e, 's')} />
+                          <div className=&quot;absolute top-2 bottom-2 -left-2 w-4 cursor-w-resize z-20&quot; onMouseDown={(e) => handleResizeStart(e, 'w')} onTouchStart={(e) => handleResizeStart(e, 'w')} />
+                          <div className=&quot;absolute top-2 bottom-2 -right-2 w-4 cursor-e-resize z-20&quot; onMouseDown={(e) => handleResizeStart(e, 'e')} onTouchStart={(e) => handleResizeStart(e, 'e')} />
+                          <div className=&quot;absolute -top-2 -left-2 w-6 h-6 cursor-nw-resize z-30&quot; onMouseDown={(e) => handleResizeStart(e, 'nw')} onTouchStart={(e) => handleResizeStart(e, 'nw')} />
+                          <div className=&quot;absolute -top-2 -right-2 w-6 h-6 cursor-ne-resize z-30&quot; onMouseDown={(e) => handleResizeStart(e, 'ne')} onTouchStart={(e) => handleResizeStart(e, 'ne')} />
+                          <div className=&quot;absolute -bottom-2 -left-2 w-6 h-6 cursor-sw-resize z-30&quot; onMouseDown={(e) => handleResizeStart(e, 'sw')} onTouchStart={(e) => handleResizeStart(e, 'sw')} />
+                          <div className=&quot;absolute -bottom-2 -right-2 w-6 h-6 cursor-se-resize z-30&quot; onMouseDown={(e) => handleResizeStart(e, 'se')} onTouchStart={(e) => handleResizeStart(e, 'se')} />
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  <div className={`${(isMiniplayer || isTheaterMode) ? 'hidden' : 'block'}`}>
+                    <h1 className=&quot;text-xl md:text-2xl font-bold mt-4 mb-1&quot;>
+                        {currentVideoData?.provider === 'gdrive' &amp;&amp; <span className=&quot;bg-blue-600/20 text-blue-400 text-xs px-2 py-1 rounded mr-2 align-middle border border-blue-500/30&quot;><i className=&quot;fab fa-google-drive&quot;></i> Google Drive</span>}
+                        {currentVideoData?.provider === 'local' &amp;&amp; <span className=&quot;bg-emerald-600/20 text-emerald-400 text-xs px-2 py-1 rounded mr-2 align-middle border border-emerald-500/30&quot;><i className=&quot;fas fa-hdd&quot;></i> Local File</span>}
+                        {currentVideoData?.provider === 'external' &amp;&amp; <span className=&quot;bg-red-600/20 text-red-500 text-xs px-2 py-1 rounded mr-2 align-middle border border-red-500/30&quot;><i className=&quot;fas fa-external-link-alt&quot;></i> Google Photos</span>}
+                        {displayTitle}
+                    </h1>
+                    {currentVideoData?.type?.includes('playlist') &amp;&amp; (
+                        <p className=&quot;text-sm text-gray-400 mb-3 flex items-center gap-2&quot;>
+                            <i className=&quot;fas fa-list&quot;></i> {currentVideoData.title}
+                        </p>
+                    )}
+                    <div className=&quot;flex flex-col sm:flex-row sm:items-center justify-between gap-4&quot;>
+                      <div className=&quot;flex items-center gap-3&quot;>
+                        <img src={displayAvatar || 'https://ui-avatars.com/api/?name=User&amp;background=random'} alt={displayChannel} className=&quot;w-10 h-10 rounded-full&quot; />
+                        <div>
+                          <h3 className=&quot;font-bold text-sm&quot;>{displayChannel}</h3>
+                          <p className=&quot;text-xs text-gray-400&quot;>সাবস্ক্রাইবার অজানা</p>
+                        </div>
+                        <button className=&quot;bg-white text-black px-4 py-2 rounded-full font-bold ml-2 hover:bg-gray-200 transition&quot;>সাবস্ক্রাইব</button>
+                      </div>
+                      <div className=&quot;flex items-center gap-2&quot;>
+                        <button onClick={() => setIsTheaterMode(true)} className=&quot;flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full hover:bg-white/20 transition font-bold whitespace-nowrap&quot; title=&quot;থিয়েটার মোড&quot;>
+                          <i className=&quot;fas fa-tv&quot;></i> থিয়েটার
+                        </button>
+                        <button onClick={activateMiniplayer} className=&quot;flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full hover:bg-white/20 transition font-bold whitespace-nowrap&quot; title=&quot;Miniplayer&quot;>
+                          <i className=&quot;fas fa-compress-alt&quot;></i> মিনিপ্লেয়ার
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`lg:w-1/3 w-full flex flex-col gap-3 ${(isMiniplayer || isTheaterMode) ? 'hidden' : 'flex'}`}>
+                  
+                  {playlistQueue.length > 0 &amp;&amp; currentVideoData?.type.includes('playlist') &amp;&amp; (
+                      <div className=&quot;bg-[#212121] rounded-xl border border-white/10 flex flex-col max-h-[500px] shadow-lg mb-2&quot;>
+                          <div className=&quot;p-4 border-b border-white/10 bg-[#181818] rounded-t-xl&quot;>
+                              <h3 className=&quot;font-bold text-lg leading-tight&quot;>{currentVideoData.title}</h3>
+                              <p className=&quot;text-xs text-gray-400 mt-1&quot;>{currentVideoData.channel} • {currentPlaylistIndex + 1} / {playlistQueue.length}</p>
+                          </div>
+                          <div className=&quot;overflow-y-auto flex-1 p-2 flex flex-col gap-1 custom-scrollbar&quot;>
+                              {playlistQueue.map((vidId, index) => {
+                                  const isPlaying = index === currentPlaylistIndex;
+                                  let title = `ভিডিও ${index + 1}`;
+                                  let channel = 'YouTube';
+                                  let thumbnail = `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`;
+
+                                  if (currentVideoData.provider === 'local') {
+                                      const localVidInfo = currentVideoData.videoObjects?.[index];
+                                      if (localVidInfo) {
+                                          title = localVidInfo.title;
+                                          channel = localVidInfo.channel;
+                                          thumbnail = localVidInfo.thumbnail;
+                                      }
+                                  } else {
+                                      const localVidInfo = videos.find(v => v.videoId === vidId);
+                                      const meta = fetchedMeta[vidId];
+                                      if (localVidInfo) {
+                                          title = localVidInfo.title;
+                                          channel = localVidInfo.channel;
+                                      } else if (meta &amp;&amp; meta.title) {
+                                          title = meta.title;
+                                          channel = meta.channel;
+                                      } else if (meta &amp;&amp; meta.loading) {
+                                          title = 'লোড হচ্ছে...';
+                                      }
+                                  }
+
+                                  return (
+                                      <div 
+                                        key={index} 
+                                        onClick={() => {
+                                            if (currentVideoData.provider === 'local') {
+                                                setCurrentPlaylistIndex(index);
+                                                const indexes = JSON.parse(localStorage.getItem(lsKey('PlaylistIndexes')) || '{}');
+                                                indexes[currentVideoData.id] = index;
+                                                localStorage.setItem(lsKey('PlaylistIndexes'), JSON.stringify(indexes));
+                                            } else {
+                                                playerRef.current?.playVideoAt(index);
+                                            }
+                                        }}
+                                        className={`flex gap-3 p-2 rounded-lg cursor-pointer transition items-center ${isPlaying ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                                      >
+                                          <div className=&quot;text-xs text-gray-400 w-4 text-center&quot;>
+                                              {isPlaying ? <i className=&quot;fas fa-play text-white text-[10px]&quot;></i> : index + 1}
+                                          </div>
+                                          <div className=&quot;w-24 h-14 flex-shrink-0 relative rounded overflow-hidden bg-black border border-white/10&quot;>
+                                              <img src={thumbnail} className=&quot;w-full h-full object-cover&quot; />
+                                          </div>
+                                          <div className=&quot;flex flex-col justify-center overflow-hidden pr-2&quot;>
+                                              <h4 className={`text-sm font-semibold line-clamp-2 leading-snug ${isPlaying ? 'text-white' : 'text-gray-300'}`}>{title}</h4>
+                                              <p className=&quot;text-xs text-gray-400 mt-0.5 truncate&quot;>{channel}</p>
+                                          </div>
+                                      </div>
+                                  )
+                              })}
+                          </div>
+                      </div>
+                  )}
+
+                  <h3 className=&quot;font-bold text-lg mb-2 mt-2&quot;>আপনার জন্য প্রস্তাবিত</h3>
+                  {videos.filter(v => v?.id !== currentVideo?.id).map(video => {
+                      const watchedSec = progressData.times[video.id] || 0;
+                      const totalSec = progressData.durations[video.id] || 0;
+                      const progressPercent = totalSec > 0 ? Math.min((watchedSec / totalSec) * 100, 100) : 0;
+
+                      return (
+                        <div key={video.id} className=&quot;flex gap-2 cursor-pointer group relative&quot;>
+                          <div 
+                            className=&quot;w-40 h-24 flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-900 border border-white/10&quot;
+                            onMouseEnter={() => handleMouseEnter(video)}
+                            onMouseLeave={handleMouseLeave}
+                          >
+                            <button 
+                              onClick={(e) => deleteMedia(e, video.id)}
+                              className=&quot;absolute top-1 left-1 bg-black/80 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30 shadow-lg&quot;
+                              title=&quot;মুছে ফেলুন&quot;
+                            >
+                              <i className=&quot;fas fa-trash text-[10px]&quot;></i>
+                            </button>
+
+                            <img src={video.thumbnail} alt={video.title} onClick={() => playVideo(video)} className={`w-full h-full object-cover transition duration-300 cursor-pointer ${hoveredVideo === video.id ? 'opacity-0' : 'opacity-100'}`} />
+                            
+                            {hoveredVideo === video.id &amp;&amp; <HoverPlayer video={video} savedTime={watchedSec} onPlay={() => playVideo(video)} />}
+
+                            {progressPercent > 0 &amp;&amp; hoveredVideo !== video.id &amp;&amp; (
+                                <div className=&quot;absolute bottom-0 left-0 right-0 h-1 bg-gray-600/80 z-20 pointer-events-none&quot;>
+                                    <div className=&quot;h-full bg-red-600&quot; style={{ width: `${progressPercent}%` }}></div>
+                                </div>
+                            )}
+
+                            {video.type.includes('playlist') &amp;&amp; (
+                                <div className=&quot;absolute bottom-1 right-1 bg-black/80 text-xs px-1.5 py-0.5 rounded flex items-center gap-1 z-20 pointer-events-none&quot;>
+                                    <i className=&quot;fas fa-list text-[10px]&quot;></i> Playlist
+                                </div>
+                            )}
+
+                            {/* External Link Badge for Recommendations */}
+                            {video.provider === 'external' &amp;&amp; (
+                                <div className=&quot;absolute top-1 right-1 bg-red-600/90 text-white text-[10px] px-1.5 py-0.5 rounded font-medium flex items-center gap-1 z-20 pointer-events-none shadow-lg&quot;>
+                                    <i className=&quot;fas fa-external-link-alt&quot;></i> Photos
+                                </div>
+                            )}
+                          </div>
+                          <div className=&quot;flex flex-col pr-6&quot; onClick={() => playVideo(video)}>
+                            <h4 className=&quot;text-sm font-semibold line-clamp-2 group-hover:text-blue-400&quot;>{video.title}</h4>
+                            <p className=&quot;text-xs text-gray-400 mt-1&quot;>{video.channel}</p>
+                          </div>
+                        </div>
+                      )
+                  })}
+                </div>
+              </div>
+
+              <div className={`p-4 sm:p-6 lg:p-8 max-w-[1800px] mx-auto ${(!currentVideo || isMiniplayer) ? 'block' : 'hidden'}`}>
+                
+                <div className=&quot;mb-6&quot;>
+                  {searchQuery &amp;&amp; <h2 className=&quot;text-xl font-bold&quot;>&quot;{searchQuery}&quot; এর ফলাফল</h2>}
+                </div>
+
+                <div className={gridClass}>
+                  {filteredVideos.map((video, index) => {
+                      const watchedSec = progressData.times[video.id] || 0;
+                      const totalSec = progressData.durations[video.id] || 0;
+                      const progressPercent = totalSec > 0 ? Math.min((watchedSec / totalSec) * 100, 100) : 0;
+
+                      return (
+                        <div key={`${video.id}-${index}`} className=&quot;flex flex-col group relative&quot;>
+                          <button 
+                            onClick={(e) => deleteMedia(e, video.id)}
+                            className=&quot;absolute top-2 left-2 bg-black/80 hover:bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30 shadow-lg&quot;
+                            title=&quot;মুছে ফেলুন&quot;
+                          >
+                            <i className=&quot;fas fa-trash text-sm&quot;></i>
+                          </button>
+
+                          <div 
+                            className=&quot;w-full aspect-video relative rounded-xl overflow-hidden mb-3 border border-white/10 bg-gray-900 cursor-pointer&quot;
+                            onMouseEnter={() => handleMouseEnter(video)}
+                            onMouseLeave={handleMouseLeave}
+                          >
+                            <img src={video.thumbnail} alt={video.title} onClick={() => playVideo(video)} className={`w-full h-full object-cover transition duration-300 ${hoveredVideo === video.id ? 'opacity-0' : 'opacity-100'}`} />
+                            
+                            {hoveredVideo === video.id &amp;&amp; <HoverPlayer video={video} savedTime={watchedSec} onPlay={() => playVideo(video)} />}
+
+                            {progressPercent > 0 &amp;&amp; hoveredVideo !== video.id &amp;&amp; (
+                                <div className=&quot;absolute bottom-0 left-0 right-0 h-1 bg-gray-600/80 z-20 pointer-events-none&quot;>
+                                    <div className=&quot;h-full bg-red-600&quot; style={{ width: `${progressPercent}%` }}></div>
+                                </div>
+                            )}
+
+                            {video.type.includes('playlist') &amp;&amp; (
+                                <div className=&quot;absolute bottom-1.5 right-1.5 bg-black/80 text-xs px-2 py-0.5 rounded font-medium flex items-center gap-1 z-20 pointer-events-none&quot;>
+                                    <i className=&quot;fas fa-list&quot;></i> Playlist
+                                </div>
+                            )}
+
+                            {/* External Link Badge for Main Grid */}
+                            {video.provider === 'external' &amp;&amp; (
+                                <div className=&quot;absolute top-2 right-2 bg-red-600/90 text-white text-[10px] px-2 py-1 rounded font-medium flex items-center gap-1 z-20 pointer-events-none shadow-lg&quot;>
+                                    <i className=&quot;fas fa-external-link-alt&quot;></i> Photos
+                                </div>
+                            )}
+                          </div>
+                          
+                          <div className=&quot;flex gap-3 pr-2 cursor-pointer&quot; onClick={() => playVideo(video)}>
+                            <img src={video.channelAvatar} alt={video.channel} className=&quot;w-9 h-9 rounded-full mt-1 flex-shrink-0&quot; />
+                            <div>
+                              <h3 className=&quot;text-sm font-semibold line-clamp-2 group-hover:text-blue-400&quot;>{video.title}</h3>
+                              <p className=&quot;text-sm text-gray-400 mt-1 hover:text-white transition&quot;>{video.channel}</p>
+                              <p className=&quot;text-sm text-gray-400&quot;>{video.views}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                  })}
+                </div>
+              </div>
+            </main>
+          </div>
+
+          {/* Local Modal (File &amp; Folder Upload) */}
+          {isLocalModalOpen &amp;&amp; (
+            <div className=&quot;fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm&quot;>
+                <div className=&quot;bg-[#212121] rounded-2xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden&quot;>
+                    <div className=&quot;flex justify-between items-center p-4 border-b border-gray-700&quot;>
+                        <h2 className=&quot;text-xl font-bold&quot;>লোকাল ফাইল বা ফোল্ডার যোগ করুন</h2>
+                        <button onClick={() => setIsLocalModalOpen(false)} className=&quot;text-gray-400 hover:text-white&quot;><i className=&quot;fas fa-times text-xl&quot;></i></button>
+                    </div>
+                    <div className=&quot;p-6 flex flex-col gap-6&quot;>
+                        <div className=&quot;bg-[#121212] p-5 rounded-xl border border-gray-600 flex flex-col items-center justify-center gap-3 hover:bg-white/5 transition relative cursor-pointer&quot;>
+                            <i className=&quot;fas fa-video text-3xl text-emerald-400&quot;></i>
+                            <div className=&quot;text-center&quot;>
+                                <h3 className=&quot;font-bold mb-1&quot;>ভিডিও ফাইল নির্বাচন করুন</h3>
+                                <p className=&quot;text-xs text-gray-400&quot;>এক বা একাধিক .mp4, .webm ফাইল</p>
+                            </div>
+                            <input 
+                                type=&quot;file&quot; 
+                                accept=&quot;video/*&quot; 
+                                multiple 
+                                className=&quot;absolute inset-0 w-full h-full opacity-0 cursor-pointer&quot;
+                                onChange={(e) => handleLocalFiles(e, false)}
+                            />
+                        </div>
+                        
+                        <div className=&quot;bg-[#121212] p-5 rounded-xl border border-gray-600 flex flex-col items-center justify-center gap-3 hover:bg-white/5 transition relative cursor-pointer&quot;>
+                            <i className=&quot;fas fa-folder-open text-3xl text-blue-400&quot;></i>
+                            <div className=&quot;text-center&quot;>
+                                <h3 className=&quot;font-bold mb-1&quot;>পুরো ফোল্ডার নির্বাচন করুন</h3>
+                                <p className=&quot;text-xs text-gray-400&quot;>ফোল্ডারের ভিডিওগুলো প্লেলিস্ট হবে</p>
+                            </div>
+                            <input 
+                                type=&quot;file&quot; 
+                                accept=&quot;video/*&quot; 
+                                webkitdirectory=&quot;true&quot; 
+                                directory=&quot;true&quot; 
+                                multiple 
+                                className=&quot;absolute inset-0 w-full h-full opacity-0 cursor-pointer&quot;
+                                onChange={(e) => handleLocalFiles(e, true)}
+                            />
+                        </div>
+                        
+                        <p className=&quot;text-[11px] text-gray-400 text-center&quot;>
+                            <i className=&quot;fas fa-info-circle mr-1 text-yellow-500&quot;></i> 
+                            ব্রাউজারের সিকিউরিটি রুল অনুযায়ী পেজ রিলোড দিলে লোকাল ফাইলগুলো মুছে যাবে।
+                        </p>
+                    </div>
+                </div>
+            </div>
+          )}
+
+          {/* Other Modals (Online Add, Alert, Confirm, Create Playlist) ... */}
+          {alertState.isOpen &amp;&amp; (
+            <div className=&quot;fixed inset-0 z-[300] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm transition-opacity&quot;>
+                <div className=&quot;bg-[#212121] rounded-2xl w-full max-w-sm border border-gray-700 shadow-2xl p-6 text-center transform transition-all scale-100&quot;>
+                    <div className=&quot;w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20&quot;>
+                        <i className=&quot;fas fa-exclamation-triangle text-2xl text-red-500&quot;></i>
+                    </div>
+                    <h2 className=&quot;text-xl font-bold mb-2&quot;>অ্যালার্ট</h2>
+                    <p className=&quot;text-gray-400 mb-6&quot;>{alertState.message}</p>
+                    <button onClick={() => setAlertState({isOpen: false, message: ''})} className=&quot;bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-full font-bold transition w-full&quot;>
+                        ঠিক আছে
+                    </button>
+                </div>
+            </div>
+          )}
+
+          {confirmState.isOpen &amp;&amp; (
+            <div className=&quot;fixed inset-0 z-[300] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm transition-opacity&quot;>
+                <div className=&quot;bg-[#212121] rounded-2xl w-full max-w-sm border border-gray-700 shadow-2xl p-6 text-center transform transition-all scale-100&quot;>
+                    <div className=&quot;w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20&quot;>
+                        <i className=&quot;fas fa-trash-alt text-2xl text-red-500&quot;></i>
+                    </div>
+                    <h2 className=&quot;text-xl font-bold mb-2&quot;>নিশ্চিত করুন</h2>
+                    <p className=&quot;text-gray-400 mb-6&quot;>{confirmState.message}</p>
+                    <div className=&quot;flex gap-3&quot;>
+                        <button onClick={() => setConfirmState({isOpen: false, message: '', targetId: null})} className=&quot;flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-full font-bold transition&quot;>
+                            বাতিল
+                        </button>
+                        <button onClick={executeDelete} className=&quot;flex-1 bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-full font-bold transition&quot;>
+                            ডিলিট করুন
+                        </button>
+                    </div>
+                </div>
+            </div>
+          )}
+
+          {isAddModalOpen &amp;&amp; (
+            <div className=&quot;fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm&quot;>
+                <div className=&quot;bg-[#212121] rounded-2xl w-full max-w-lg border border-gray-700 shadow-2xl&quot;>
+                    <div className=&quot;flex justify-between items-center p-4 border-b border-gray-700&quot;>
+                        <h2 className=&quot;text-xl font-bold&quot;>অনলাইন ভিডিও যোগ করুন</h2>
+                        <button onClick={() => setIsAddModalOpen(false)} className=&quot;text-gray-400 hover:text-white&quot;><i className=&quot;fas fa-times text-xl&quot;></i></button>
+                    </div>
+                    <form onSubmit={handleAddSubmit} className=&quot;p-4 flex flex-col gap-4&quot;>
+                        <div>
+                            <label className=&quot;block text-sm text-gray-400 mb-1&quot;>ইউটিউব, ড্রাইভ বা ফটোজ লিংক/এমবেড কোড</label>
+                            <input type=&quot;text&quot; required placeholder='যেমন: https://photos.app.goo.gl/...' className=&quot;w-full bg-[#121212] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500&quot; value={newMediaInput.link} onChange={(e) => setNewMediaInput({...newMediaInput, link: e.target.value})} />
+                        </div>
+                        <div>
+                            <label className=&quot;block text-sm text-gray-400 mb-1&quot;>টাইটেল (খালি রাখলে নিজে থেকেই তৈরি হবে)</label>
+                            <input type=&quot;text&quot; placeholder=&quot;ভিডিও বা প্লেলিস্টের নাম&quot; className=&quot;w-full bg-[#121212] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500&quot; value={newMediaInput.title} onChange={(e) => setNewMediaInput({...newMediaInput, title: e.target.value})} />
+                        </div>
+                        <div>
+                            <label className=&quot;block text-sm text-gray-400 mb-1&quot;>চ্যানেলের নাম (ঐচ্ছিক)</label>
+                            <input type=&quot;text&quot; placeholder=&quot;চ্যানেলের নাম&quot; className=&quot;w-full bg-[#121212] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500&quot; value={newMediaInput.channel} onChange={(e) => setNewMediaInput({...newMediaInput, channel: e.target.value})} />
+                        </div>
+                        <div className=&quot;flex justify-end gap-3 mt-4&quot;>
+                            <button type=&quot;button&quot; onClick={() => setIsAddModalOpen(false)} className=&quot;px-4 py-2 rounded-full font-bold hover:bg-white/10&quot;>বাতিল</button>
+                            <button type=&quot;submit&quot; className=&quot;bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-full font-bold transition&quot;>যোগ করুন</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+          )}
+
+          {isCreateListModalOpen &amp;&amp; (
+            <div className=&quot;fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm&quot;>
+                <div className=&quot;bg-[#212121] rounded-2xl w-full max-w-lg border border-gray-700 shadow-2xl&quot;>
+                    <div className=&quot;flex justify-between items-center p-4 border-b border-gray-700&quot;>
+                        <h2 className=&quot;text-xl font-bold&quot;>নতুন কাস্টম প্লেলিস্ট বানান</h2>
+                        <button onClick={() => setIsCreateListModalOpen(false)} className=&quot;text-gray-400 hover:text-white&quot;><i className=&quot;fas fa-times text-xl&quot;></i></button>
+                    </div>
+                    <form onSubmit={handleCreatePlaylist} className=&quot;p-4 flex flex-col gap-4&quot;>
+                        <div>
+                            <label className=&quot;block text-sm text-gray-400 mb-1&quot;>প্লেলিস্টের নাম</label>
+                            <input type=&quot;text&quot; required placeholder=&quot;যেমন: My Favorite Videos&quot; className=&quot;w-full bg-[#121212] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500&quot; value={newListTitle} onChange={(e) => setNewListTitle(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className=&quot;block text-sm text-gray-400 mb-1&quot;>ভিডিও সিলেক্ট করুন</label>
+                            <div className=&quot;max-h-60 overflow-y-auto bg-[#121212] rounded-lg p-2 flex flex-col gap-1 border border-gray-600 custom-scrollbar&quot;>
+                                {videos.filter(v => v.type === 'video' &amp;&amp; v.provider !== 'gdrive' &amp;&amp; v.provider !== 'local').length === 0 &amp;&amp; <p className=&quot;text-center text-gray-400 py-4 text-sm&quot;>কোনো ইউটিউব ভিডিও নেই। আগে ভিডিও যোগ করুন!</p>}
+                                {videos.filter(v => v.type === 'video' &amp;&amp; v.provider !== 'gdrive' &amp;&amp; v.provider !== 'local').map(v => (
+                                    <label key={v.id} className=&quot;flex items-center gap-3 p-2 hover:bg-white/10 rounded cursor-pointer transition&quot;>
+                                        <input type=&quot;checkbox&quot; checked={selectedVideoIds.includes(v.videoId)} onChange={(e) => { if(e.target.checked) setSelectedVideoIds([...selectedVideoIds, v.videoId]); else setSelectedVideoIds(selectedVideoIds.filter(id => id !== v.videoId)); }} className=&quot;w-4 h-4 rounded border-gray-500 bg-black cursor-pointer&quot; />
+                                        <img src={v.thumbnail} className=&quot;w-12 h-8 object-cover rounded&quot; />
+                                        <span className=&quot;text-sm truncate select-none&quot;>{v.title}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <p className=&quot;text-xs text-gray-400 mt-2 text-right&quot;>{selectedVideoIds.length} টি ভিডিও সিলেক্ট করা হয়েছে</p>
+                        </div>
+                        <div className=&quot;flex justify-end gap-3 mt-2&quot;>
+                            <button type=&quot;button&quot; onClick={() => setIsCreateListModalOpen(false)} className=&quot;px-4 py-2 rounded-full font-bold hover:bg-white/10&quot;>বাতিল</button>
+                            <button type=&quot;submit&quot; className=&quot;bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-full font-bold transition&quot;>সেভ করুন</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    window._chapterInitVideos = [];
+    window._chapterId = 'global';
+    window.addEventListener('message', function(e) {
+      if (e.data &amp;&amp; e.data.type === 'initChapterVideos') {
+        window._chapterInitVideos = e.data.videos || [];
+        window._chapterId = e.data.chapterId || 'global';
+        // Force full re-render with new chapter context
+        const container = document.getElementById('root');
+        container.innerHTML = '';
+        ReactDOM.createRoot(container).render(React.createElement(App));
+      }
+    });
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>"
+                                    ></iframe>
                                 </div>
 
                                 <!-- Tab: Q&A (Advanced Flashcard) -->
-                                <div id="tab-content-qna" class="hidden h-full flex flex-col">
-                                     <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/30">
-                                        <div class="flex items-center gap-4">
-                                            <span class="text-xs text-gray-500">প্রশ্ন ব্যাংক</span>
-                                            <!-- View Toggles -->
-                                            <div class="bg-gray-200 dark:bg-gray-700 rounded-lg p-0.5 flex">
-                                                <button onclick="toggleQnaView('list')" id="btn-qna-list" class="px-3 py-1 text-xs rounded-md shadow-sm bg-white dark:bg-gray-600 text-gray-800 dark:text-white font-medium transition">List</button>
-                                                <button onclick="toggleQnaView('card')" id="btn-qna-card" class="px-3 py-1 text-xs rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 transition">Flashcard</button>
-                                            </div>
-                                        </div>
-                                        <button onclick="openEditContentModal('qna')" class="text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 transition">
-                                            <i data-lucide="plus-circle" class="h-3.5 w-3.5"></i> প্রশ্ন যুক্ত করুন
-                                        </button>
-                                    </div>
+                                <div id="tab-content-qna" class="hidden flex flex-col min-h-full">
+
                                     
                                     <!-- List View -->
                                     <div id="qna-view-list" class="p-6 space-y-4"></div>
@@ -563,7 +2410,7 @@
     <!-- CONTENT EDIT MODALS -->
 
     <!-- Edit Text/Markdown Modal (UPDATED: With Image Tool) -->
-    <div id="modal-edit-text" class="modal opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div id="modal-edit-text" class="modal opacity-0 pointer-events-none fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-900 w-11/12 max-w-4xl h-[85vh] rounded-xl shadow-2xl p-6 flex flex-col">
             <div class="flex justify-between items-center mb-4 flex-none">
                 <h3 class="text-xl font-bold dark:text-white">ডিজিটাল পাঠ এডিট (Markdown)</h3>
@@ -599,7 +2446,7 @@
     </div>
 
     <!-- INSERT IMAGE LAYOUT MODAL (NEW) -->
-    <div id="modal-insert-image" class="modal opacity-0 pointer-events-none fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div id="modal-insert-image" class="modal opacity-0 pointer-events-none fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-900 w-11/12 max-w-lg rounded-xl shadow-2xl p-6">
             <h3 class="text-xl font-bold dark:text-white mb-4">ছবির লেআউট নির্বাচন করুন</h3>
             
@@ -654,7 +2501,7 @@
     </div>
 
     <!-- Edit PDF Modal (UPDATED: Multi-PDF) -->
-    <div id="modal-edit-pdf" class="modal opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div id="modal-edit-pdf" class="modal opacity-0 pointer-events-none fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-900 w-11/12 max-w-lg rounded-xl shadow-2xl p-6">
             <h3 class="text-xl font-bold dark:text-white mb-4">PDF লাইব্রেরি ম্যানেজমেন্ট</h3>
             
@@ -675,7 +2522,7 @@
     </div>
 
     <!-- Edit Video Modal -->
-    <div id="modal-edit-video" class="modal opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div id="modal-edit-video" class="modal opacity-0 pointer-events-none fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-900 w-11/12 max-w-md rounded-xl shadow-2xl p-6">
             <h3 class="text-xl font-bold dark:text-white mb-4">নতুন ভিডিও লিংক</h3>
             <input type="text" id="input-video-title" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white outline-none mb-3" placeholder="ভিডিও শিরোনাম">
@@ -692,7 +2539,7 @@
     </div>
 
     <!-- Edit Q&A Modal -->
-    <div id="modal-edit-qna" class="modal opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div id="modal-edit-qna" class="modal opacity-0 pointer-events-none fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-900 w-11/12 max-w-lg rounded-xl shadow-2xl p-6">
             <h3 class="text-xl font-bold dark:text-white mb-4">প্রশ্ন ও উত্তর / লিংক</h3>
             <textarea id="input-qna-q" class="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white outline-none mb-2 font-bold" rows="2" placeholder="প্রশ্ন বা শিরোনাম..."></textarea>
@@ -708,7 +2555,7 @@
     </div>
 
     <!-- Statistics Modal -->
-    <div id="modal-stats" class="modal opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div id="modal-stats" class="modal opacity-0 pointer-events-none fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="z-index:9998">
         <div class="bg-white dark:bg-gray-900 w-11/12 max-w-6xl rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -887,6 +2734,13 @@
         function initUI() {
             renderClassCards();
             checkTheme();
+            // Apply global book mode state on load
+            applySplitModeUI();
+            // Move tools-menu-panel to document.body so it escapes any overflow/visibility constraints
+            const _toolsPanel = document.getElementById('tools-menu-panel');
+            if (_toolsPanel && _toolsPanel.parentNode !== document.body) {
+                document.body.appendChild(_toolsPanel);
+            }
             lucide.createIcons();
             
             // Load YouTube API
@@ -1241,14 +3095,20 @@
             // Make it invisible but present in DOM so we can scroll before showing
             readerEl.classList.remove('hidden');
             readerEl.style.opacity = '0';
-            document.getElementById('reader-subject-title').innerText = `${currentClass.name} > ${sub.name}`;
             selectedIds.clear();
             
             // Restore sidebar hidden state BEFORE any paint to prevent flash
             const sidebar = document.getElementById('reader-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
             const panels = document.getElementById('reader-panels');
             sidebar.style.transition = 'none'; // suppress during restore
-            if (window.innerWidth >= 1024) {
+            if (window.innerWidth < 1024) {
+                // Mobile: auto-open sidebar so user can pick a topic
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('flex');
+                if (overlay) overlay.classList.remove('hidden');
+            } else {
+                // Desktop: restore last state
                 if (sessionStorage.getItem('sidebarHidden')) {
                     sidebar.classList.add('lg:w-0', 'lg:opacity-0', 'lg:pointer-events-none');
                     if (panels) panels.classList.remove('lg:gap-6');
@@ -1266,8 +3126,7 @@
             // If we have a last chapter, show its content immediately
             if (currentChapterNode) {
                 document.getElementById('content-empty').classList.add('hidden');
-                document.getElementById('content-tabs').classList.remove('hidden');
-                document.getElementById('chapter-title').innerText = currentChapterNode.title;
+                
                 ensureContentStructure(currentChapterNode);
                 switchTab(activeTab);
                 
@@ -1278,7 +3137,6 @@
                 }
             } else {
                 document.getElementById('content-empty').classList.remove('hidden');
-                document.getElementById('content-tabs').classList.add('hidden');
                 ['text', 'pdf', 'video', 'qna'].forEach(t => document.getElementById(`tab-content-${t}`).classList.add('hidden'));
             }
             
@@ -1417,9 +3275,8 @@
             }
             currentChapterNode = node;
             ensureContentStructure(currentChapterNode);
-            document.getElementById('chapter-title').innerText = node.title;
             document.getElementById('content-empty').classList.add('hidden');
-            document.getElementById('content-tabs').classList.remove('hidden');
+            
             
             // Re-render to update highlighting (only when user manually clicks)
             if (!isAutoOpen) {
@@ -1494,14 +3351,63 @@
         // --- CONTENT TABS & RENDERING ---
         function switchTab(tab) {
             activeTab = tab;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById(`tab-btn-${tab}`).classList.add('tab-active');
-            ['text', 'pdf', 'video', 'qna'].forEach(t => document.getElementById(`tab-content-${t}`).classList.add('hidden'));
-            document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
-            if (tab === 'pdf') document.getElementById('tab-content-pdf').classList.add('flex');
-            else document.getElementById('tab-content-pdf').classList.remove('flex');
-            renderActiveTabContent();
+            if (!splitModeActive || tab !== 'text') {
+                deactivateBookModeIfActive();
+            }
+            // Sync compact tab bar active state
+            document.querySelectorAll('.compact-tab-btn').forEach(b => b.classList.remove('tab-active'));
+            const compactBtn = document.getElementById(`compact-tab-btn-${tab}`);
+            if (compactBtn) compactBtn.classList.add('tab-active');
+            // Hide all tab contents and tools sections
+            ['text', 'pdf', 'video', 'qna'].forEach(t => {
+                const tc = document.getElementById(`tab-content-${t}`);
+                if (tc) { tc.classList.add('hidden'); tc.style.display = 'none'; }
+                const tta = document.getElementById(`tools-tab-actions-${t}`);
+                if (tta) tta.style.display = 'none';
+            });
+            // Show active tab content
+            const activeTab_ = document.getElementById(`tab-content-${tab}`);
+            if (activeTab_) {
+                activeTab_.classList.remove('hidden');
+                activeTab_.style.display = 'flex';
+                activeTab_.style.flexDirection = (tab === 'pdf') ? 'row' : 'column';
+            }
+            const contentBody = document.getElementById('content-body');
+            if (contentBody) {
+                contentBody.style.overflowY = (tab === 'pdf' || tab === 'video') ? 'hidden' : 'auto';
+            }
+            // Show tools panel section for active tab
+            const toolsSection = document.getElementById(`tools-tab-actions-${tab}`);
+            if (toolsSection && (tab === 'text' || tab === 'pdf' || tab === 'qna')) {
+                toolsSection.style.display = 'flex';
+            }
+            if (tab === 'video') { sendChapterVideosToIframe(); }
+            else { renderActiveTabContent(); }
         }
+
+        function sendChapterVideosToIframe() {
+            if (!currentChapterNode) return;
+            const iframe = document.getElementById('youtube-tab-iframe');
+            if (!iframe) return;
+            const videos = (currentChapterNode.content && currentChapterNode.content.videos) || [];
+            const chapterId = String(currentChapterNode.id || currentChapterNode.title || 'ch');
+            function doSend() {
+                try { iframe.contentWindow.postMessage({ type: 'initChapterVideos', videos: videos, chapterId: chapterId }, '*'); } catch(e) {}
+            }
+            doSend(); setTimeout(doSend, 300); setTimeout(doSend, 900);
+            iframe.onload = doSend;
+        }
+
+        window.addEventListener('message', function(e) {
+            if (e.data && e.data.type === 'ytVideosChanged') {
+                if (!currentChapterNode) return;
+                const chapterId = String(currentChapterNode.id || currentChapterNode.title || 'ch');
+                if (e.data.chapterId && e.data.chapterId !== chapterId) return;
+                if (!currentChapterNode.content) currentChapterNode.content = {};
+                currentChapterNode.content.videos = e.data.videos || [];
+                saveData();
+            }
+        });
 
         function renderActiveTabContent() {
             if (!currentChapterNode) return;
@@ -1509,19 +3415,47 @@
 
             if (activeTab === 'text') {
                 const viewer = document.getElementById('render-markdown');
+                const scrollView = document.getElementById('reader-scroll-view');
                 const emptyMsg = document.getElementById('empty-text-msg');
                 const loader = document.getElementById('loading-indicator');
-                viewer.innerHTML = ''; emptyMsg.classList.add('hidden');
-                
+                const wrapper = document.getElementById('book-mode-wrapper');
+
+                // Clear previous content immediately
+                bookModeActive = false;
+                bookPages = [];
+                if (wrapper) wrapper.classList.remove('active');
+                viewer.innerHTML = '';
+                emptyMsg.classList.add('hidden');
+
                 if (content.textUrl) {
                     loader.classList.remove('hidden');
+                    if (scrollView) scrollView.style.display = splitModeActive ? 'none' : '';
                     fetchTextContent(content.textUrl)
-                        .then(text => { viewer.innerHTML = marked.parse(text); loader.classList.add('hidden'); })
-                        .catch(err => { viewer.innerHTML = `<div class="text-red-500 text-center">Error: ${err.message}</div>`; loader.classList.add('hidden'); });
+                        .then(text => {
+                            viewer.innerHTML = marked.parse(text);
+                            loader.classList.add('hidden');
+                            if (splitModeActive) _activateBookModeNow();
+                            else if (scrollView) scrollView.style.display = '';
+                        })
+                        .catch(err => {
+                            viewer.innerHTML = `<div class="text-red-500 text-center">Error: ${err.message}</div>`;
+                            loader.classList.add('hidden');
+                            if (splitModeActive) _activateBookModeNow();
+                            else if (scrollView) scrollView.style.display = '';
+                        });
                 } else if (content.text && content.text.trim()) {
+                    if (scrollView) scrollView.style.display = splitModeActive ? 'none' : '';
                     viewer.innerHTML = marked.parse(content.text);
+                    if (splitModeActive) _activateBookModeNow();
                 } else {
-                    emptyMsg.classList.remove('hidden');
+                    // No content — show blank pages in split mode, empty msg in scroll mode
+                    if (splitModeActive) {
+                        if (scrollView) scrollView.style.display = 'none';
+                        _showBlankSplitPages();
+                    } else {
+                        if (scrollView) scrollView.style.display = '';
+                        emptyMsg.classList.remove('hidden');
+                    }
                 }
             } else if (activeTab === 'pdf') {
                 const frame = document.getElementById('pdf-frame');
@@ -1624,16 +3558,32 @@
 
         function toggleQnaView(mode) {
             qnaViewMode = mode;
-            const btnList = document.getElementById('btn-qna-list'); const btnCard = document.getElementById('btn-qna-card');
-            const viewList = document.getElementById('qna-view-list'); const viewCard = document.getElementById('qna-view-card');
+            // Main tab bar buttons
+            const btnList = document.getElementById('btn-qna-list');
+            const btnCard = document.getElementById('btn-qna-card');
+            // Tools panel buttons
+            const tBtnList = document.getElementById('tools-btn-qna-list');
+            const tBtnCard = document.getElementById('tools-btn-qna-card');
+            const viewList = document.getElementById('qna-view-list');
+            const viewCard = document.getElementById('qna-view-card');
+
+            const activeClass   = 'px-2 py-1 text-xs rounded-md shadow-sm bg-white dark:bg-gray-600 text-gray-800 dark:text-white font-medium transition';
+            const inactiveClass = 'px-2 py-1 text-xs rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 transition';
+
             if (mode === 'list') {
-                btnList.className = 'px-3 py-1 text-xs rounded-md shadow-sm bg-white dark:bg-gray-600 text-gray-800 dark:text-white font-medium transition';
-                btnCard.className = 'px-3 py-1 text-xs rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 transition';
-                viewList.classList.remove('hidden'); viewCard.classList.add('hidden');
+                if (btnList)  btnList.className  = activeClass;
+                if (btnCard)  btnCard.className  = inactiveClass;
+                if (tBtnList) tBtnList.className = activeClass;
+                if (tBtnCard) tBtnCard.className = inactiveClass;
+                if (viewList) viewList.classList.remove('hidden');
+                if (viewCard) viewCard.classList.add('hidden');
             } else {
-                btnCard.className = 'px-3 py-1 text-xs rounded-md shadow-sm bg-white dark:bg-gray-600 text-gray-800 dark:text-white font-medium transition';
-                btnList.className = 'px-3 py-1 text-xs rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 transition';
-                viewList.classList.add('hidden'); viewCard.classList.remove('hidden');
+                if (btnCard)  btnCard.className  = activeClass;
+                if (btnList)  btnList.className  = inactiveClass;
+                if (tBtnCard) tBtnCard.className = activeClass;
+                if (tBtnList) tBtnList.className = inactiveClass;
+                if (viewList) viewList.classList.add('hidden');
+                if (viewCard) viewCard.classList.remove('hidden');
             }
         }
 
@@ -1804,7 +3754,34 @@
         }
 
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); lucide.createIcons(); }
-        function checkTheme() { if(localStorage.getItem('theme')==='dark') document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }
+
+        // ---- Font Size Control ----
+        function applyFontSize(pct) {
+            pct = parseInt(pct);
+            const sizePx = (16 * pct / 100).toFixed(2) + 'px';
+            const lh = Math.max(1.2, Math.min(2.5, 1.4 + (pct - 100) / 400)).toFixed(2);
+            document.documentElement.style.setProperty('--reader-font-size', sizePx);
+            document.documentElement.style.setProperty('--reader-line-height', lh);
+            // সব label ও slider sync
+            ['font-size-label','font-size-label-sub'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.textContent = pct + '%';
+            });
+            ['font-size-slider','font-size-slider-sub'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = pct;
+            });
+            localStorage.setItem('readerFontSizePct', pct);
+            // Book mode: repaginate after font change settles
+            if (bookModeActive) {
+                clearTimeout(window._bookRepaginateTimer);
+                window._bookRepaginateTimer = setTimeout(() => repaginateBookIfActive(), 120);
+            }
+        }
+
+        function initFontSize() {
+            const saved = parseInt(localStorage.getItem('readerFontSizePct') || '100');
+            applyFontSize(saved);
+        }
+        function checkTheme() { if(localStorage.getItem('theme')==='dark') document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); initFontSize(); }
 
         function toggleEditMode() {
             isEditMode = !isEditMode; selectedIds.clear(); updateEditModeUI();
@@ -1844,6 +3821,108 @@
         let confirmCb = null;
         function openConfirmModal(msg, cb) { document.getElementById('confirm-modal-text').innerText = msg; confirmCb = cb; openModal('modal-confirm'); }
         document.getElementById('confirm-modal-btn').onclick = () => { if(confirmCb) confirmCb(); closeModal('modal-confirm'); };
+
+
+        // ---- Reader page tools menu ----
+        let _toolsMenuOpen = false;
+        function closeToolsMenu() {
+            const p = document.getElementById('tools-menu-panel');
+            if (p) p.style.display = 'none';
+            _toolsMenuOpen = false;
+        }
+        function toggleToolsMenu(callerBtn) {
+            const p = document.getElementById('tools-menu-panel');
+            if (!p) return;
+            if (_toolsMenuOpen) {
+                p.style.display = 'none';
+                _toolsMenuOpen = false;
+                return;
+            }
+            // compact-tools-btn is the only anchor now
+            const btn = document.getElementById('compact-tools-btn');
+            if (!btn) return;
+            const r = btn.getBoundingClientRect();
+            if (r.width === 0 && r.height === 0) {
+                p.style.top  = '50px';
+                p.style.right = '16px';
+            } else {
+                p.style.top   = (r.bottom + 4) + 'px';
+                p.style.right = (window.innerWidth - r.right) + 'px';
+            }
+            p.style.left    = 'auto';
+            p.style.display = 'block';
+            _toolsMenuOpen  = true;
+        }
+        document.addEventListener('click', function(e) {
+            const w1 = document.getElementById('tools-menu-wrapper');
+            const w2 = document.getElementById('compact-tools-btn');
+            const p = document.getElementById('tools-menu-panel');
+            if (p && !p.contains(e.target) &&
+                !(w1 && w1.contains(e.target)) &&
+                !(w2 && w2.contains(e.target))) {
+                p.style.display = 'none';
+                _toolsMenuOpen = false;
+            }
+        }, true);
+
+        // ---- Add button dropdown (subjects page) ----
+        let _addMenuOpen = false;
+        function closeAddMenu() {
+            const p = document.getElementById('add-menu-panel');
+            if (p) p.style.display = 'none';
+            _addMenuOpen = false;
+        }
+        function toggleAddMenu() {
+            const p = document.getElementById('add-menu-panel');
+            if (!p) return;
+            if (_addMenuOpen) {
+                p.style.display = 'none';
+                _addMenuOpen = false;
+            } else {
+                p.style.display = 'block';
+                _addMenuOpen = true;
+            }
+        }
+        document.addEventListener('click', function(e) {
+            const w = document.getElementById('add-btn-wrapper');
+            const p = document.getElementById('add-menu-panel');
+            if (p && w && !w.contains(e.target)) {
+                p.style.display = 'none';
+                _addMenuOpen = false;
+            }
+        }, true);
+
+        // ---- Subjects page tools menu ----
+        let _toolsMenuSubjectsOpen = false;
+        function closeToolsMenuSubjects() {
+            const p = document.getElementById('tools-menu-panel-subjects');
+            if (p) p.style.display = 'none';
+            _toolsMenuSubjectsOpen = false;
+        }
+        function toggleToolsMenuSubjects() {
+            const p = document.getElementById('tools-menu-panel-subjects');
+            const btn = document.querySelector('#tools-menu-wrapper-subjects button');
+            if (!p || !btn) return;
+            if (_toolsMenuSubjectsOpen) {
+                p.style.display = 'none';
+                _toolsMenuSubjectsOpen = false;
+            } else {
+                const r = btn.getBoundingClientRect();
+                p.style.top = (r.bottom + 4) + 'px';
+                p.style.right = (window.innerWidth - r.right) + 'px';
+                p.style.left = 'auto';
+                p.style.display = 'block';
+                _toolsMenuSubjectsOpen = true;
+            }
+        }
+        document.addEventListener('click', function(e) {
+            const w2 = document.getElementById('tools-menu-wrapper-subjects');
+            const p = document.getElementById('tools-menu-panel-subjects');
+            if (p && w2 && !w2.contains(e.target) && !p.contains(e.target)) {
+                p.style.display = 'none';
+                _toolsMenuSubjectsOpen = false;
+            }
+        }, true);
         function confirmReset() { openConfirmModal("সতর্কতা: সব ডাটা রিসেট হবে এবং ডিফল্ট লোড হবে।", resetData); }
         
         function openBulkImportSubjectModal(isChapter = false) { 
@@ -2068,6 +4147,11 @@
                 if (panels) panels.classList.add('lg:gap-6');
                 overlay.classList.add('hidden');
             }
+            // Repaginate book mode on resize
+            if (bookModeActive) {
+                clearTimeout(window._bookRepaginateTimer);
+                window._bookRepaginateTimer = setTimeout(() => repaginateBookIfActive(), 200);
+            }
         });
 
         window.onload = init;
@@ -2204,7 +4288,6 @@
                 // Open reader
                 hideAllViews();
                 document.getElementById('view-reader').classList.remove('hidden');
-                document.getElementById('reader-subject-title').innerText = `${currentClass.name} > ${currentSubject.name}`;
                 
                 if (chapterIdOrShort) {
                     // Find chapter by ID
@@ -2240,7 +4323,6 @@
                     expandAllChapters(currentSubject.chapters);
                     renderChapters();
                     document.getElementById('content-empty').classList.remove('hidden');
-                    document.getElementById('content-tabs').classList.add('hidden');
                 }
             } finally {
                 isNavigating = false;
@@ -3124,6 +5206,327 @@
                 progressBar.className = `h-full rounded-full transition-all duration-300 ${progress === 100 ? 'bg-green-500' : 'bg-indigo-600'}`;
             }
             if (progressText) progressText.innerText = `${progress}%`;
+        }
+
+        // =============================================
+        // SPLIT MODE — probe-based pixel-accurate pagination
+        // =============================================
+        let splitModeActive   = localStorage.getItem('splitMode') !== 'false'; // default: true
+        let bookModeActive    = false; // true when split mode is actually rendered
+        let bookPages         = [];
+        let bookCurrentSpread = 0;
+        let _bookRawHTML      = '';
+
+        let _probeWidth    = 0;
+        let _probeFontSize = '';
+        let _probeLH       = '';
+
+        function _syncProbeStyles() {
+            const cs = getComputedStyle(document.documentElement);
+            _probeFontSize = cs.getPropertyValue('--reader-font-size').trim()   || '1rem';
+            _probeLH       = cs.getPropertyValue('--reader-line-height').trim() || '1.8';
+        }
+
+        function _probeHeight(html) {
+            const probe = document.getElementById('book-measure-probe');
+            if (!probe) return 0;
+            probe.style.width = _probeWidth + 'px';
+            probe.innerHTML = `<div class="prose dark:prose-invert max-w-none" style="font-size:${_probeFontSize};line-height:${_probeLH}">${html}</div>`;
+            const h = probe.firstElementChild ? probe.firstElementChild.scrollHeight : probe.scrollHeight;
+            probe.innerHTML = '';
+            return h;
+        }
+
+        // Split one block across pages (sentence → word level)
+        function _splitBlock(block, pages, curHTML, curH, pageH) {
+            const tag      = (block.tagName || 'p').toLowerCase();
+            const m        = block.outerHTML.match(/^<[a-z0-9]+([^>]*)>/i);
+            const attrStr  = m ? m[1] : '';
+            const inner    = block.innerHTML;
+            const sentences = inner.match(/[^।。！？.!?\n]+[।。！？.!?\n]?/g) || [inner];
+
+            let partHTML = '';
+
+            for (const sentence of sentences) {
+                const tryFull = curHTML + `<${tag}${attrStr}>${partHTML + sentence}</${tag}>`;
+                if (_probeHeight(tryFull) <= pageH) {
+                    partHTML += sentence;
+                } else {
+                    // Word-level split
+                    const words = sentence.split(/(\s+)/);
+                    for (const word of words) {
+                        const tryW = curHTML + `<${tag}${attrStr}>${partHTML + word}</${tag}>`;
+                        if (_probeHeight(tryW) <= pageH) {
+                            partHTML += word;
+                        } else {
+                            if (partHTML.trim()) {
+                                curHTML += `<${tag}${attrStr}>${partHTML}</${tag}>`;
+                            }
+                            pages.push(curHTML);
+                            curHTML  = '';
+                            curH     = 0;
+                            partHTML = word;
+                        }
+                    }
+                }
+            }
+
+            if (partHTML.trim()) {
+                curHTML += `<${tag}${attrStr}>${partHTML}</${tag}>`;
+                curH = _probeHeight(curHTML);
+            }
+            return { curHTML, curH };
+        }
+
+        // Main paginator
+        function _paginateHTML(htmlContent, pageH) {
+            const tmp    = document.createElement('div');
+            tmp.innerHTML = htmlContent;
+            const blocks  = Array.from(tmp.children);
+            const pages   = [];
+            let curHTML   = '';
+            let curH      = 0;
+
+            const SPLITTABLE = new Set(['p','h1','h2','h3','h4','h5','h6','li','blockquote','dt','dd']);
+
+            function flushPage() {
+                if (curHTML.trim()) pages.push(curHTML);
+                curHTML = ''; curH = 0;
+            }
+
+            for (const block of blocks) {
+                const outer  = block.outerHTML;
+                const testH  = _probeHeight(curHTML + outer);
+
+                if (testH <= pageH) {
+                    curHTML += outer;
+                    curH     = testH;
+                    continue;
+                }
+
+                const tag = (block.tagName || '').toLowerCase();
+
+                if (SPLITTABLE.has(tag)) {
+                    const spaceLeft = pageH - curH;
+                    const aloneH    = _probeHeight(outer);
+
+                    if (spaceLeft < pageH * 0.12) {
+                        // Almost full — flush first
+                        flushPage();
+                        if (aloneH <= pageH) {
+                            curHTML = outer; curH = aloneH;
+                        } else {
+                            const r = _splitBlock(block, pages, '', 0, pageH);
+                            curHTML = r.curHTML; curH = r.curH;
+                        }
+                    } else {
+                        // Split across current page and next
+                        const r = _splitBlock(block, pages, curHTML, curH, pageH);
+                        curHTML = r.curHTML; curH = r.curH;
+                    }
+                } else {
+                    // Non-splittable
+                    flushPage();
+                    const aloneH = _probeHeight(outer);
+                    curHTML = outer; curH = aloneH;
+                    if (aloneH > pageH) flushPage();
+                }
+            }
+
+            flushPage();
+            return pages.length ? pages : [''];
+        }
+
+        function renderBookSpread() {
+            const total    = bookPages.length;
+            const leftIdx  = bookCurrentSpread;
+            const rightIdx = bookCurrentSpread + 1;
+
+            const leftEl  = document.getElementById('book-left-content');
+            const rightEl = document.getElementById('book-right-content');
+
+            const styleStr = `font-size:${_probeFontSize};line-height:${_probeLH}`;
+            leftEl.setAttribute('style',  styleStr);
+            rightEl.setAttribute('style', styleStr);
+
+            leftEl.innerHTML  = bookPages[leftIdx]  || '';
+            const mobile   = _isMobile();
+            rightEl.innerHTML = (!mobile && rightIdx < total) ? bookPages[rightIdx] : '';
+
+            const chTitle = (currentChapterNode && currentChapterNode.title) ? currentChapterNode.title : '';
+            document.getElementById('book-left-num').textContent  = chTitle ? `${chTitle}  —  ${leftIdx + 1} / ${total}` : `— ${leftIdx + 1} / ${total} —`;
+            document.getElementById('book-right-num').textContent = (!mobile && rightIdx < total) ? `— ${rightIdx + 1} / ${total} —` : '';
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function _showBlankSplitPages() {
+            const wrapper = document.getElementById('book-mode-wrapper');
+            const leftEl  = document.getElementById('book-left-content');
+            const rightEl = document.getElementById('book-right-content');
+            const chTitle = (currentChapterNode && currentChapterNode.title) ? currentChapterNode.title : '';
+            if (wrapper)  wrapper.classList.add('active');
+            if (leftEl)   { leftEl.innerHTML = ''; leftEl.removeAttribute('style'); }
+            if (rightEl)  { rightEl.innerHTML = ''; rightEl.removeAttribute('style'); }
+            const leftNum  = document.getElementById('book-left-num');
+            const rightNum = document.getElementById('book-right-num');
+            if (leftNum)  leftNum.textContent  = chTitle || '';
+            if (rightNum) rightNum.textContent = '';
+        }
+
+        function bookChangePage(dir) {
+            const step = _pageStep();
+            const next = bookCurrentSpread + dir * step;
+            if (next < 0 || next >= bookPages.length) return;
+            bookCurrentSpread = next;
+            renderBookSpread();
+        }
+
+        // Returns true if mobile (single-page) mode
+        function _isMobile() { return window.innerWidth <= 640; }
+
+        // Page step: 1 on mobile (single page), 2 on desktop (spread)
+        function _pageStep() { return _isMobile() ? 1 : 2; }
+
+        // Mouse wheel page turning for book mode (desktop)
+        (function() {
+            let _lastWheelTime = 0;
+            document.addEventListener('wheel', function(e) {
+                if (!bookModeActive) return;
+                const wrapper = document.getElementById('book-mode-wrapper');
+                if (!wrapper || !wrapper.classList.contains('active')) return;
+                if (!wrapper.contains(e.target)) return;
+                e.preventDefault();
+                const now = Date.now();
+                if (now - _lastWheelTime < 80) return;
+                _lastWheelTime = now;
+                const dir = e.deltaY > 0 ? 1 : -1;
+                const step = _pageStep();
+                const next = bookCurrentSpread + dir * step;
+                if (next < 0 || next >= bookPages.length) return;
+                bookCurrentSpread = next;
+                renderBookSpread();
+            }, { passive: false });
+        })();
+
+        // Touch swipe page turning for book mode (mobile)
+        (function() {
+            let _touchStartX = 0;
+            let _touchStartY = 0;
+            document.addEventListener('touchstart', function(e) {
+                if (!bookModeActive) return;
+                _touchStartX = e.touches[0].clientX;
+                _touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+            document.addEventListener('touchend', function(e) {
+                if (!bookModeActive) return;
+                const wrapper = document.getElementById('book-mode-wrapper');
+                if (!wrapper || !wrapper.classList.contains('active')) return;
+                const dx = e.changedTouches[0].clientX - _touchStartX;
+                const dy = e.changedTouches[0].clientY - _touchStartY;
+                if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return; // not a horizontal swipe
+                const dir = dx < 0 ? 1 : -1; // swipe left = next, swipe right = prev
+                const step = _pageStep();
+                const next = bookCurrentSpread + dir * step;
+                if (next < 0 || next >= bookPages.length) return;
+                bookCurrentSpread = next;
+                renderBookSpread();
+            }, { passive: true });
+        })();
+
+        // Direct activation — scrollView already hidden before calling
+        function _activateBookModeNow() {
+            const renderMd   = document.getElementById('render-markdown');
+            const scrollView = document.getElementById('reader-scroll-view');
+            const wrapper    = document.getElementById('book-mode-wrapper');
+            const rawHTML    = renderMd ? renderMd.innerHTML : '';
+            if (!rawHTML || !rawHTML.trim()) {
+                if (scrollView) scrollView.style.display = '';
+                return;
+            }
+            bookModeActive = true;
+            _bookRawHTML   = rawHTML;
+            if (scrollView) scrollView.style.display = 'none';
+            if (wrapper)    wrapper.classList.add('active');
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                const contentArea = document.getElementById('book-left-content-area');
+                if (!contentArea) return;
+                const cs     = window.getComputedStyle(contentArea);
+                const padTop = parseFloat(cs.paddingTop)    || 0;
+                const padBot = parseFloat(cs.paddingBottom) || 0;
+                const padL   = parseFloat(cs.paddingLeft)   || 0;
+                const padR   = parseFloat(cs.paddingRight)  || 0;
+                const pageH  = contentArea.clientHeight - padTop - padBot;
+                _probeWidth  = contentArea.clientWidth  - padL   - padR;
+                _syncProbeStyles();
+                bookPages         = _paginateHTML(rawHTML, pageH);
+                bookCurrentSpread = 0;
+                renderBookSpread();
+            }));
+        }
+
+        // =============================================
+        // SPLIT MODE TOGGLE
+        // =============================================
+
+        function applySplitModeUI() {
+            const badge  = document.getElementById('tools-split-mode-badge');
+            if (splitModeActive) {
+                if (badge) { badge.textContent = 'চালু'; badge.className = 'ml-auto text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-bold'; }
+            } else {
+                if (badge) { badge.textContent = 'বন্ধ'; badge.className = 'ml-auto text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'; }
+            }
+        }
+
+        function toggleSplitMode() {
+            splitModeActive = !splitModeActive;
+            localStorage.setItem('splitMode', splitModeActive);
+            applySplitModeUI();
+            if (activeTab === 'text' && currentChapterNode) {
+                if (splitModeActive) {
+                    _activateBookModeNow();
+                } else {
+                    deactivateBookModeIfActive();
+                }
+            }
+        }
+
+        function deactivateBookModeIfActive() {
+            if (!bookModeActive) return;
+            bookModeActive = false;
+            bookPages = [];
+            const renderMd = document.getElementById('render-markdown');
+            const scrollView = document.getElementById('reader-scroll-view');
+            const wrapper  = document.getElementById('book-mode-wrapper');
+            if (renderMd)   renderMd.style.display = '';
+            if (scrollView) scrollView.style.display = '';
+            if (wrapper)    wrapper.classList.remove('active');
+        }
+
+        // Re-paginate on resize/font change
+        function repaginateBookIfActive() {
+            if (!bookModeActive || !_bookRawHTML) return;
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                const contentArea = document.getElementById('book-left-content-area');
+                if (!contentArea) return;
+                const cs     = window.getComputedStyle(contentArea);
+                const padTop = parseFloat(cs.paddingTop) || 0;
+                const padBot = parseFloat(cs.paddingBottom) || 0;
+                const padL   = parseFloat(cs.paddingLeft) || 0;
+                const padR   = parseFloat(cs.paddingRight) || 0;
+                const pageH  = contentArea.clientHeight - padTop - padBot;
+                _probeWidth  = contentArea.clientWidth  - padL   - padR;
+                _syncProbeStyles();
+                const prevLeft  = bookCurrentSpread;
+                const prevTotal = bookPages.length;
+                bookPages = _paginateHTML(_bookRawHTML, pageH);
+                const ratio = prevTotal > 0 ? prevLeft / prevTotal : 0;
+                let newLeft = Math.floor(ratio * bookPages.length);
+                const step = (typeof _isMobile === "function" && _isMobile()) ? 1 : 2;
+                if (step === 2 && newLeft % 2 !== 0) newLeft--;
+                bookCurrentSpread = Math.max(0, Math.min(newLeft, bookPages.length - 1));
+                renderBookSpread();
+            }));
         }
     </script>
 </body>
